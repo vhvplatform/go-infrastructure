@@ -1,0 +1,121 @@
+@startuml infrastructure-architecture
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultTextAlignment center
+skinparam componentStyle rectangle
+
+title Infrastructure Architecture Overview
+
+!define CLOUD_COLOR #E3F2FD
+!define K8S_COLOR #326CE5
+!define DB_COLOR #13AA52
+!define MONITOR_COLOR #FF6F00
+
+package "Google Cloud Platform" as GCP <<Cloud>> #CLOUD_COLOR {
+    
+    package "Networking" as Network {
+        component "VPC Network" as VPC #E8F5E9
+        component "Cloud Load Balancer" as LB #E8F5E9
+        component "Cloud DNS" as DNS #E8F5E9
+    }
+    
+    package "Google Kubernetes Engine" as GKE <<Kubernetes>> #K8S_COLOR {
+        
+        package "Control Plane" as ControlPlane {
+            component "API Server" as APIServer
+            component "Scheduler" as Scheduler
+            component "Controller Manager" as ControllerMgr
+        }
+        
+        package "Node Pool" as NodePool {
+            
+            package "Namespace: saas-framework" as NS_Framework {
+                component "Microservices" as Services {
+                    [API Gateway]
+                    [Auth Service]
+                    [User Service]
+                    [Email Service]
+                }
+            }
+            
+            package "Namespace: monitoring" as NS_Monitoring {
+                component "Observability" as Monitoring {
+                    [Prometheus]
+                    [Grafana]
+                    [Loki]
+                }
+            }
+            
+            package "Namespace: argocd" as NS_ArgoCD {
+                component "GitOps" as GitOps {
+                    [ArgoCD Server]
+                    [ArgoCD Controller]
+                }
+            }
+        }
+    }
+    
+    package "Container Registry" as Registry {
+        database "GCR" as GCR #E8F5E9
+    }
+    
+    package "Cloud Storage" as Storage {
+        database "GCS Buckets" as GCS #E8F5E9 {
+            [Terraform State]
+            [Backups]
+            [Static Assets]
+        }
+    }
+}
+
+package "MongoDB Atlas" as Atlas <<Cloud>> #DB_COLOR {
+    database "MongoDB Cluster" as MongoDB {
+        [Primary Node]
+        [Secondary Node 1]
+        [Secondary Node 2]
+    }
+}
+
+package "External Services" as External {
+    component "GitHub" as GitHub #FFF8E1
+    component "Docker Hub" as DockerHub #FFF8E1
+    component "Third-party APIs" as APIs #FFF8E1
+}
+
+' Relationships
+LB --> Services : Routes traffic
+DNS --> LB : DNS resolution
+VPC --> GKE : Network connectivity
+GKE --> GCR : Pull images
+Services --> MongoDB : Read/Write data
+GitOps --> GitHub : Sync configs
+GitOps --> Services : Deploy/Update
+Monitoring --> Services : Scrape metrics
+Services --> APIs : External calls
+
+' Notes
+note right of GKE
+  **Key Features:**
+  - Auto-scaling node pools
+  - Workload Identity
+  - VPC-native networking
+  - Multi-zone deployment
+end note
+
+note right of MongoDB
+  **Configuration:**
+  - 3-node replica set
+  - Auto-scaling enabled
+  - Point-in-time recovery
+  - Encrypted at rest
+end note
+
+note bottom of GitOps
+  **GitOps Workflow:**
+  - Continuous deployment
+  - Automated sync
+  - Self-healing
+  - Rollback capability
+end note
+
+@enduml

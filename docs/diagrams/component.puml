@@ -1,0 +1,260 @@
+@startuml component-diagram
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam componentStyle rectangle
+
+title Component Diagram - System Architecture
+
+!define APP_COLOR #E3F2FD
+!define INFRA_COLOR #F3E5F5
+!define DATA_COLOR #E8F5E9
+!define MONITOR_COLOR #FFF3E0
+
+package "External Users & Systems" {
+    actor "End User" as User
+    actor "Administrator" as Admin
+    component "Mobile App" as MobileApp #FFE0B2
+    component "Web Application" as WebApp #FFE0B2
+}
+
+package "API Layer" as APILayer #APP_COLOR {
+    component "API Gateway" as APIGateway {
+        portin HTTP
+        portout "Auth Check"
+        portout "Route"
+    }
+    
+    component "Load Balancer" as LB {
+        portin "External Traffic"
+        portout "Internal Traffic"
+    }
+}
+
+package "Microservices Layer" as ServicesLayer #APP_COLOR {
+    
+    component "Authentication Service" as AuthService {
+        [JWT Management]
+        [OAuth2 Provider]
+        [Session Management]
+        database "User Sessions" as SessionCache
+    }
+    
+    component "User Service" as UserService {
+        [User Management]
+        [Profile Service]
+        [Preferences]
+    }
+    
+    component "Email Service" as EmailService {
+        [Email Queue]
+        [Template Engine]
+        [SMTP Client]
+    }
+    
+    component "Notification Service" as NotificationService {
+        [Push Notifications]
+        [SMS Gateway]
+        [WebSocket Server]
+    }
+}
+
+package "Data Layer" as DataLayer #DATA_COLOR {
+    
+    database "MongoDB Primary" as MongoDB_Primary {
+        [Users Collection]
+        [Sessions Collection]
+        [Audit Logs]
+    }
+    
+    database "MongoDB Secondary 1" as MongoDB_Sec1
+    database "MongoDB Secondary 2" as MongoDB_Sec2
+    
+    component "Redis Cache" as Redis {
+        [Session Cache]
+        [Rate Limiting]
+        [Feature Flags]
+    }
+}
+
+package "Infrastructure Services" as InfraLayer #INFRA_COLOR {
+    
+    component "Service Mesh" as ServiceMesh {
+        [Istio Control Plane]
+        [Envoy Proxies]
+        [Traffic Management]
+    }
+    
+    component "Secret Management" as Secrets {
+        [Kubernetes Secrets]
+        [External Secrets Operator]
+        [Vault Integration]
+    }
+    
+    component "Configuration" as Config {
+        [ConfigMaps]
+        [Environment Configs]
+        [Feature Flags]
+    }
+}
+
+package "Observability & Monitoring" as MonitorLayer #MONITOR_COLOR {
+    
+    component "Metrics Collection" as Metrics {
+        [Prometheus Server]
+        [Service Monitors]
+        [Exporters]
+    }
+    
+    component "Visualization" as Viz {
+        [Grafana Dashboards]
+        [AlertManager]
+        [PagerDuty Integration]
+    }
+    
+    component "Logging" as Logging {
+        [Loki]
+        [Fluent Bit]
+        [Log Aggregation]
+    }
+    
+    component "Tracing" as Tracing {
+        [Jaeger]
+        [OpenTelemetry]
+        [Span Collection]
+    }
+}
+
+package "CI/CD & GitOps" as CICDLayer #INFRA_COLOR {
+    component "ArgoCD" as ArgoCD {
+        [Application Controller]
+        [Repo Server]
+        [Auto-sync]
+    }
+    
+    component "GitHub Actions" as GHA {
+        [Build Pipeline]
+        [Test Pipeline]
+        [Deploy Pipeline]
+    }
+    
+    component "Image Registry" as Registry {
+        [GCR]
+        [Image Scanning]
+        [Vulnerability DB]
+    }
+}
+
+package "External Services" {
+    component "MongoDB Atlas\nCloud Service" as MongoAtlas #C8E6C9
+    component "Google Cloud Platform" as GCP #E1F5FE
+    component "GitHub" as GitHub #FFF8E1
+}
+
+' User interactions
+User --> WebApp
+User --> MobileApp
+Admin --> WebApp
+
+' API Layer connections
+WebApp --> LB : HTTPS
+MobileApp --> LB : HTTPS
+LB --> APIGateway : HTTP
+
+' Service connections
+APIGateway --> AuthService : Authenticate
+APIGateway --> UserService : User operations
+APIGateway --> EmailService : Email operations
+APIGateway --> NotificationService : Notifications
+
+UserService --> AuthService : Verify token
+EmailService --> AuthService : Verify token
+NotificationService --> AuthService : Verify token
+
+' Data connections
+AuthService --> MongoDB_Primary : Write
+AuthService --> SessionCache : Cache
+UserService --> MongoDB_Primary : Read/Write
+EmailService --> MongoDB_Primary : Write logs
+NotificationService --> MongoDB_Primary : Write logs
+
+MongoDB_Primary --> MongoDB_Sec1 : Replicate
+MongoDB_Primary --> MongoDB_Sec2 : Replicate
+UserService --> Redis : Cache
+AuthService --> Redis : Rate limit
+
+' Infrastructure connections
+ServiceMesh ..> AuthService : Proxy
+ServiceMesh ..> UserService : Proxy
+ServiceMesh ..> EmailService : Proxy
+ServiceMesh ..> NotificationService : Proxy
+
+Secrets --> AuthService : Secrets
+Secrets --> EmailService : API Keys
+Config --> UserService : Config
+Config --> NotificationService : Config
+
+' Monitoring connections
+Metrics --> AuthService : Scrape
+Metrics --> UserService : Scrape
+Metrics --> EmailService : Scrape
+Metrics --> NotificationService : Scrape
+Metrics --> Viz : Data
+
+Logging --> AuthService : Logs
+Logging --> UserService : Logs
+Logging --> EmailService : Logs
+Logging --> NotificationService : Logs
+
+Tracing ..> AuthService : Traces
+Tracing ..> UserService : Traces
+
+' CI/CD connections
+GHA --> Registry : Push images
+ArgoCD --> GitHub : Sync manifests
+ArgoCD --> AuthService : Deploy
+ArgoCD --> UserService : Deploy
+ArgoCD --> EmailService : Deploy
+
+' Cloud connections
+MongoDB_Primary -up-> MongoAtlas : Managed by
+LB -up-> GCP : Hosted on
+Registry -up-> GCP : Hosted on
+GHA --> GitHub : Triggered by
+
+' Notes
+note right of APIGateway
+  **Responsibilities:**
+  - Request routing
+  - Authentication
+  - Rate limiting
+  - API versioning
+  - Request/response transformation
+end note
+
+note bottom of MongoDB_Primary
+  **Replica Set:**
+  - 3-node cluster
+  - Automatic failover
+  - Read preference: Primary
+  - Write concern: Majority
+end note
+
+note right of ServiceMesh
+  **Service Mesh Features:**
+  - mTLS between services
+  - Traffic splitting
+  - Circuit breaking
+  - Retries & timeouts
+  - Observability
+end note
+
+note bottom of ArgoCD
+  **GitOps Workflow:**
+  - Git as source of truth
+  - Automated synchronization
+  - Declarative configuration
+  - Self-healing
+  - Rollback capabilities
+end note
+
+@enduml

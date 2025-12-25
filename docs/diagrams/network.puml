@@ -1,0 +1,128 @@
+@startuml network-diagram
+!theme plain
+skinparam backgroundColor #FFFFFF
+
+title Network Architecture Diagram
+
+!define VPC_COLOR #E3F2FD
+!define SUBNET_COLOR #C5E1A5
+!define K8S_COLOR #BBDEFB
+!define DB_COLOR #C8E6C9
+
+package "Google Cloud Platform - Project: saas-platform" {
+    
+    package "VPC Network: vpc-saas-platform" as VPC <<VPC>> #VPC_COLOR {
+        
+        rectangle "Region: us-central1" as Region1 {
+            
+            rectangle "Subnet: subnet-gke-nodes\n10.0.0.0/20" as SubnetNodes #SUBNET_COLOR {
+                
+                rectangle "GKE Cluster: saas-framework-prod" as GKECluster #K8S_COLOR {
+                    
+                    package "Node Pool" {
+                        rectangle "Node 1\n10.0.0.10" as Node1
+                        rectangle "Node 2\n10.0.0.11" as Node2
+                        rectangle "Node 3\n10.0.0.12" as Node3
+                    }
+                    
+                    rectangle "Secondary IP Ranges" as SecondaryRanges {
+                        rectangle "Pods: 10.1.0.0/16" as PodsRange
+                        rectangle "Services: 10.2.0.0/20" as ServicesRange
+                    }
+                }
+            }
+            
+            rectangle "Subnet: subnet-proxy\n10.0.16.0/24" as SubnetProxy #SUBNET_COLOR {
+                rectangle "Cloud Load Balancer\n10.0.16.10" as LoadBalancer
+            }
+        }
+        
+        rectangle "Global Resources" as Global {
+            rectangle "Cloud NAT\nNAT Gateway" as CloudNAT
+            rectangle "Cloud Router" as CloudRouter
+            rectangle "Firewall Rules" as Firewall {
+                note right
+                  - Allow HTTP/HTTPS (80, 443)
+                  - Allow SSH from IAP (22)
+                  - Allow K8s API (6443)
+                  - Allow node communication
+                  - Deny all other ingress
+                end note
+            }
+        }
+    }
+    
+    rectangle "Cloud DNS" as DNS {
+        rectangle "Managed Zone\nsaas-platform.io" as DNSZone
+        rectangle "Records" as DNSRecords {
+            [api.saas-platform.io]
+            [app.saas-platform.io]
+            [*.saas-platform.io]
+        }
+    }
+}
+
+cloud "Internet" as Internet #FFE0B2 {
+    actor "End Users" as Users
+    actor "Developers" as Devs
+}
+
+cloud "MongoDB Atlas" as MongoDBAtlas #DB_COLOR {
+    database "MongoDB Cluster" as MongoDB {
+        rectangle "VPC Peering\n10.3.0.0/16" as MongoPeering
+        rectangle "Primary: 10.3.0.10" as MongoPrimary
+        rectangle "Secondary: 10.3.0.11" as MongoSecondary1
+        rectangle "Secondary: 10.3.0.12" as MongoSecondary2
+    }
+}
+
+' Network flow relationships
+Users --> Internet
+Internet --> DNS : DNS Query
+DNS --> LoadBalancer : Resolve to LB IP
+LoadBalancer --> GKECluster : Forward to services
+GKECluster --> CloudNAT : Outbound traffic
+CloudNAT --> Internet : NAT translation
+Node1 --> MongoDB : Database connection
+Node2 --> MongoDB : Database connection
+Node3 --> MongoDB : Database connection
+VPC --> MongoPeering : VPC Peering (optional)
+
+' Additional connections
+Devs --> Internet
+Internet --> GKECluster : kubectl access\n(via Cloud IAP)
+
+' Network annotations
+note top of SubnetNodes
+  **Subnet Configuration**
+  - Primary range: /20 (4,096 IPs)
+  - Secondary ranges for K8s
+  - Private Google Access: Enabled
+  - Flow logs: Enabled
+end note
+
+note bottom of GKECluster
+  **Networking Mode: VPC-Native**
+  - IP aliasing enabled
+  - Direct pod-to-pod routing
+  - Optimized for performance
+  - No NAT for pod traffic
+end note
+
+note right of MongoDB
+  **Network Security**
+  - Private endpoints only
+  - IP whitelist configured
+  - TLS 1.2+ required
+  - VPC Peering (optional)
+end note
+
+note left of LoadBalancer
+  **Load Balancer Type**
+  - HTTP(S) Load Balancer
+  - Global anycast IP
+  - SSL termination
+  - Cloud CDN enabled
+end note
+
+@enduml
