@@ -3,8 +3,8 @@ variable "project_id" {
   type        = string
   
   validation {
-    condition     = can(regex("^[a-z][a-z0-9-]{4,28}[a-z0-9]$", var.project_id))
-    error_message = "The project_id must be between 6 and 30 characters and contain only lowercase letters, numbers, and hyphens."
+    condition     = can(regex("^[a-z]([a-z0-9-]{4,28}[a-z0-9])?$", var.project_id)) && length(var.project_id) >= 6 && length(var.project_id) <= 30
+    error_message = "The project_id must be between 6 and 30 characters, start with a lowercase letter, and contain only lowercase letters, numbers, and hyphens."
   }
 }
 
@@ -13,8 +13,8 @@ variable "cluster_name" {
   type        = string
   
   validation {
-    condition     = can(regex("^[a-z]([a-z0-9-]{0,38}[a-z0-9])?$", var.cluster_name))
-    error_message = "The cluster_name must start with a letter, end with a letter or number, contain only lowercase letters, numbers, and hyphens, and be 1-40 characters long."
+    condition     = can(regex("^[a-z]([a-z0-9-]{1,38}[a-z0-9])?$", var.cluster_name)) && length(var.cluster_name) >= 3 && length(var.cluster_name) <= 40
+    error_message = "The cluster_name must be 3-40 characters, start with a letter, end with a letter or number, and contain only lowercase letters, numbers, and hyphens."
   }
 }
 

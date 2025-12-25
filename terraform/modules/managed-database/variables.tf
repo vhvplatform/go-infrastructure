@@ -25,8 +25,8 @@ variable "instance_size" {
   default     = "M10"
   
   validation {
-    condition     = can(regex("^M(10|20|30|40|50|60|80|140|200|300|400|700)$", var.instance_size))
-    error_message = "The instance_size must be a valid MongoDB Atlas cluster tier (M10, M20, M30, M40, M50, M60, M80, M140, M200, M300, M400, M700)."
+    condition     = can(regex("^M(10|20|30|40|50|60|80|140|200|300|400|700|800|1000|1700)$", var.instance_size))
+    error_message = "The instance_size must be a valid MongoDB Atlas cluster tier (M10, M20, M30, M40, M50, M60, M80, M140, M200, M300, M400, M700, M800, M1000, M1700)."
   }
 }
 
@@ -36,8 +36,8 @@ variable "mongodb_version" {
   default     = "7.0"
   
   validation {
-    condition     = can(regex("^[4-9]\\.[0-9]+$", var.mongodb_version))
-    error_message = "The mongodb_version must be a valid version format (e.g., 4.4, 5.0, 6.0, 7.0). Note: Update validation range when new major versions are released."
+    condition     = can(regex("^(4\\.[4-9]|[5-9]\\.[0-9]+)$", var.mongodb_version))
+    error_message = "The mongodb_version must be a supported version (e.g., 4.4, 4.9, 5.0, 6.0, 7.0, 8.0). MongoDB 4.2 and earlier are deprecated."
   }
 }
 
