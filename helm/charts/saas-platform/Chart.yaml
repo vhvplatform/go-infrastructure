@@ -14,8 +14,8 @@ maintainers:
   - name: SaaS Framework Team
     email: team@saas-framework.io
 sources:
-  - https://github.com/longvhv/saas-framework-go
-  - https://github.com/longvhv/saas-infrastructure
+  - https://github.com/vhvcorp/go-framework
+  - https://github.com/vhvcorp/go-infrastructure
 
 dependencies:
   - name: infrastructure

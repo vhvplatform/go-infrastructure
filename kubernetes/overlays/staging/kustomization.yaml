@@ -31,20 +31,20 @@ configMapGenerator:
 
 images:
   - name: api-gateway
-    newName: ghcr.io/longvhv/saas-api-gateway
+    newName: ghcr.io/vhvcorp/go-api-gateway
     newTag: staging
   - name: auth-service
-    newName: ghcr.io/longvhv/saas-auth-service
+    newName: ghcr.io/vhvcorp/go-auth-service
     newTag: staging
   - name: user-service
-    newName: ghcr.io/longvhv/saas-user-service
+    newName: ghcr.io/vhvcorp/go-user-service
     newTag: staging
   - name: tenant-service
-    newName: ghcr.io/longvhv/saas-tenant-service
+    newName: ghcr.io/vhvcorp/go-tenant-service
     newTag: staging
   - name: notification-service
-    newName: ghcr.io/longvhv/saas-notification-service
+    newName: ghcr.io/vhvcorp/go-notification-service
     newTag: staging
   - name: system-config-service
-    newName: ghcr.io/longvhv/saas-system-config-service
+    newName: ghcr.io/vhvcorp/go-system-config-service
     newTag: staging

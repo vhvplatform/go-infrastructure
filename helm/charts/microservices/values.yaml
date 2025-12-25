@@ -3,7 +3,7 @@ name: service
 replicas: 1
 
 image:
-  repository: ghcr.io/longvhv/saas-service
+  repository: ghcr.io/vhvcorp/go-service
   tag: latest
   pullPolicy: IfNotPresent
 

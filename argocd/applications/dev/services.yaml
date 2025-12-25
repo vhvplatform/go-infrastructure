@@ -9,7 +9,7 @@ spec:
   project: saas-platform
   
   source:
-    repoURL: https://github.com/longvhv/saas-infrastructure
+    repoURL: https://github.com/vhvcorp/go-infrastructure
     targetRevision: main
     path: helm/charts/saas-platform
     helm:
