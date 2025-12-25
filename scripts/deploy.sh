@@ -35,7 +35,7 @@ elif [ "$DEPLOY_METHOD" == "argocd" ]; then
     # Wait for ArgoCD sync
     echo "⏳ Waiting for ArgoCD sync..."
     kubectl wait --for=condition=Synced \
-        application/saas-infrastructure-${ENVIRONMENT} \
+        application/go-infrastructure-${ENVIRONMENT} \
         -n argocd \
         --timeout=10m
 else

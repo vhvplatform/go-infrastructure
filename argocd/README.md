@@ -74,19 +74,19 @@ argocd login localhost:8080 --username admin
 argocd app list
 
 # Sync application
-argocd app sync saas-infrastructure-dev
+argocd app sync go-infrastructure-dev
 
 # View application
-argocd app get saas-infrastructure-dev
+argocd app get go-infrastructure-dev
 
 # View diff
-argocd app diff saas-infrastructure-dev
+argocd app diff go-infrastructure-dev
 
 # Rollback
-argocd app rollback saas-infrastructure-dev <revision>
+argocd app rollback go-infrastructure-dev <revision>
 
 # Delete application
-argocd app delete saas-infrastructure-dev
+argocd app delete go-infrastructure-dev
 ```
 
 ## App-of-Apps Pattern

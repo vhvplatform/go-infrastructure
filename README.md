@@ -167,7 +167,7 @@ See [LICENSE](LICENSE) file for details.
 
 - Create an issue in the repository
 - Contact: team@saas-framework.io
-- Slack: #saas-infrastructure
+- Slack: #go-infrastructure
 
 ## 🔗 Related Repositories
 

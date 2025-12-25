@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: saas-infrastructure-staging
+  name: go-infrastructure-staging
   namespace: argocd
   labels:
     environment: staging
