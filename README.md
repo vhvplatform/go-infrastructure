@@ -1,6 +1,27 @@
-# SaaS Infrastructure
+# Go Infrastructure
 
-Infrastructure as Code (IaC) for the SaaS Platform microservices.
+Complete Infrastructure as Code (IaC) solution for deploying and managing a modern SaaS platform on Google Cloud Platform and Kubernetes.
+
+## 📖 Overview
+
+This repository contains all infrastructure configurations for the SaaS Platform, including:
+
+- **Kubernetes Deployments**: Container orchestration with GKE
+- **Terraform Modules**: Cloud infrastructure provisioning (GKE, MongoDB Atlas)
+- **Helm Charts**: Package management and deployment templates
+- **GitOps Configuration**: ArgoCD for continuous deployment
+- **Monitoring Stack**: Prometheus, Grafana, and Loki for observability
+- **Automation Scripts**: Deployment and management utilities
+
+## ✨ Key Features
+
+- 🚀 **Multi-environment support** (dev/staging/production)
+- 🔄 **GitOps workflow** with ArgoCD
+- 📊 **Complete observability** stack
+- 🔒 **Security best practices** built-in
+- 🎯 **Infrastructure as Code** for reproducibility
+- ⚡ **Auto-scaling** and high availability
+- 📦 **Modular architecture** for reusability
 
 ## 📁 Repository Structure
 
@@ -33,11 +54,33 @@ infrastructure/
 
 ### Prerequisites
 
-- `kubectl` v1.27+
-- `kustomize` v5.0+
-- `helm` v3.12+
-- `terraform` v1.5+ (optional)
-- Access to a Kubernetes cluster
+Ensure you have the following tools installed:
+
+| Tool | Minimum Version | Purpose | Installation |
+|------|----------------|---------|--------------|
+| `kubectl` | v1.27+ | Kubernetes CLI | [Install kubectl](https://kubernetes.io/docs/tasks/tools/) |
+| `kustomize` | v5.0+ | Kubernetes customization | [Install kustomize](https://kubectl.docs.kubernetes.io/installation/kustomize/) |
+| `helm` | v3.12+ | Kubernetes package manager | [Install helm](https://helm.sh/docs/intro/install/) |
+| `terraform` | v1.10+ | Infrastructure provisioning | [Install terraform](https://www.terraform.io/downloads) |
+| `gcloud` | Latest | Google Cloud CLI | [Install gcloud](https://cloud.google.com/sdk/docs/install) |
+
+**Additional Requirements:**
+- Access to a Kubernetes cluster (GKE recommended)
+- GCP account with billing enabled
+- MongoDB Atlas account (for database)
+- Appropriate IAM permissions
+
+### Infrastructure Components
+
+Our infrastructure stack includes:
+
+- **Container Orchestration**: Google Kubernetes Engine (GKE)
+- **Database**: MongoDB Atlas (managed)
+- **Container Registry**: Google Container Registry (GCR)
+- **Monitoring**: Prometheus + Grafana
+- **Logging**: Loki
+- **GitOps**: ArgoCD
+- **Service Mesh**: (Future: Istio)
 
 ### Deploy to Development
 
