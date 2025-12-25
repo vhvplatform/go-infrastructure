@@ -17,7 +17,7 @@ Common issues and solutions for the SaaS Platform infrastructure.
 **Solutions**:
 ```bash
 # Check image exists
-docker pull ghcr.io/longvhv/saas-auth-service:dev
+docker pull ghcr.io/vhvcorp/go-auth-service:dev
 
 # Create image pull secret
 kubectl create secret docker-registry ghcr-secret \

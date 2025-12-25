@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: saas-infrastructure-staging
+  name: go-infrastructure-staging
   namespace: argocd
   labels:
     environment: staging
@@ -9,7 +9,7 @@ spec:
   project: saas-platform
   
   source:
-    repoURL: https://github.com/longvhv/saas-infrastructure
+    repoURL: https://github.com/vhvcorp/go-infrastructure
     targetRevision: main
     path: kubernetes/overlays/staging
   

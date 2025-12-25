@@ -31,22 +31,22 @@ configMapGenerator:
 
 images:
   - name: api-gateway
-    newName: ghcr.io/longvhv/saas-api-gateway
+    newName: ghcr.io/vhvcorp/go-api-gateway
     newTag: v1.0.0
   - name: auth-service
-    newName: ghcr.io/longvhv/saas-auth-service
+    newName: ghcr.io/vhvcorp/go-auth-service
     newTag: v1.0.0
   - name: user-service
-    newName: ghcr.io/longvhv/saas-user-service
+    newName: ghcr.io/vhvcorp/go-user-service
     newTag: v1.0.0
   - name: tenant-service
-    newName: ghcr.io/longvhv/saas-tenant-service
+    newName: ghcr.io/vhvcorp/go-tenant-service
     newTag: v1.0.0
   - name: notification-service
-    newName: ghcr.io/longvhv/saas-notification-service
+    newName: ghcr.io/vhvcorp/go-notification-service
     newTag: v1.0.0
   - name: system-config-service
-    newName: ghcr.io/longvhv/saas-system-config-service
+    newName: ghcr.io/vhvcorp/go-system-config-service
     newTag: v1.0.0
 
 # Note: Resource limits and PDB patches need to reference prefixed names (prod-*)

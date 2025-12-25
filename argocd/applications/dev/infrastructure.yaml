@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: saas-infrastructure-dev
+  name: go-infrastructure-dev
   namespace: argocd
   labels:
     environment: development
@@ -9,7 +9,7 @@ spec:
   project: saas-platform
   
   source:
-    repoURL: https://github.com/longvhv/saas-infrastructure
+    repoURL: https://github.com/vhvcorp/go-infrastructure
     targetRevision: main
     path: kubernetes/overlays/dev
   

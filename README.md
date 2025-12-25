@@ -167,10 +167,10 @@ See [LICENSE](LICENSE) file for details.
 
 - Create an issue in the repository
 - Contact: team@saas-framework.io
-- Slack: #saas-infrastructure
+- Slack: #go-infrastructure
 
 ## 🔗 Related Repositories
 
-- [saas-framework-go](https://github.com/longvhv/saas-framework-go) - Main monorepo
-- [saas-shared-go](https://github.com/longvhv/saas-shared-go) - Shared libraries
+- [go-framework](https://github.com/vhvcorp/go-framework) - Main monorepo
+- [go-shared](https://github.com/vhvcorp/go-shared) - Shared libraries
 - Individual service repositories (after extraction)

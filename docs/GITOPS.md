@@ -48,16 +48,16 @@ GitOps uses Git as the single source of truth for declarative infrastructure and
 argocd app list
 
 # Sync application
-argocd app sync saas-infrastructure-dev
+argocd app sync go-infrastructure-dev
 
 # View sync status
-argocd app get saas-infrastructure-dev
+argocd app get go-infrastructure-dev
 
 # View diff
-argocd app diff saas-infrastructure-dev
+argocd app diff go-infrastructure-dev
 
 # Rollback
-argocd app rollback saas-infrastructure-dev <revision>
+argocd app rollback go-infrastructure-dev <revision>
 ```
 
 ## Best Practices
