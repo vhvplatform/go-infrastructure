@@ -5,13 +5,22 @@
 *.tfstate.*
 *.tfvars
 !terraform.tfvars.example
+!*.tfvars.example
 .terraform/
 .terraform.lock.hcl
 crash.log
+crash.*.log
 override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
+.terraformrc
+terraform.rc
+
+# Terraform plan files
+*.tfplan
+plan.out
+tfplan
 
 # Kustomize
 kustomization.yaml.bak
@@ -20,6 +29,7 @@ kustomization.yaml.bak
 *.tgz
 charts/*/charts/
 charts/*/tmpcharts/
+requirements.lock
 
 # Secrets
 *secret*.yaml
@@ -47,3 +57,22 @@ backup-*.yaml
 # Generated manifests
 /tmp/
 *.generated.yaml
+
+# PlantUML outputs
+docs/diagrams/output/
+*.png
+*.svg
+!docs/diagrams/*.puml
+
+# OS specific
+Thumbs.db
+.DS_Store
+
+# Local environment files
+.env
+.env.local
+.env.*.local
+
+# Kubernetes config
+kubeconfig
+*.kubeconfig

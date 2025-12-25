@@ -1,0 +1,26 @@
+# ============================================================================
+# Staging Environment Configuration Example
+# ============================================================================
+# Copy this file to terraform.tfvars and fill in with your actual values
+# Never commit terraform.tfvars to version control!
+# ============================================================================
+
+# GCP Configuration
+project_id = "your-gcp-project-id-staging"
+region     = "us-central1"
+
+# MongoDB Atlas Configuration
+mongodb_atlas_project_id = "your-mongodb-atlas-project-id-staging"
+mongodb_atlas_public_key = "your-mongodb-atlas-public-key"
+mongodb_atlas_private_key = "your-mongodb-atlas-private-key"
+
+# Database Credentials
+mongodb_username = "saas_staging_user"
+mongodb_password = "your-secure-password-here"
+
+# Network Security
+# Add your IP addresses or CIDR blocks that need access to MongoDB
+mongodb_ip_whitelist = [
+  "10.0.0.0/8",      # Internal network
+  "YOUR_OFFICE_IP/32" # Office IP
+]
