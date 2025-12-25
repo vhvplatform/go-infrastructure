@@ -146,7 +146,7 @@ variable "mongodb_ip_whitelist" {
 
 **Best Practices**:
 - Never use `0.0.0.0/0` in production
-- Use Cloud NAT to provide consistent egress IPs from GKE, then whitelist those NAT IPs
+- Use Cloud NAT to provide consistent egress IPs from GKE, then whitelist those NAT IPs (requires additional Terraform configuration not included in current modules)
 - Consider VPC peering for private connectivity (more secure than public IPs)
 - Use MongoDB Atlas Private Endpoints for direct private connectivity
 - Regularly review and update whitelist

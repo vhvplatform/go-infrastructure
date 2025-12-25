@@ -110,11 +110,15 @@ note bottom of GKECluster
 end note
 
 note right of MongoDB
-  **Network Security**
-  - Private endpoints only
-  - IP whitelist configured
-  - TLS 1.2+ required
-  - VPC Peering (optional, not yet implemented)
+  **Network Security (Current)**
+  - Public endpoints with IP whitelist
+  - TLS 1.2+ required for all connections
+  - IP restrictions enforced
+  
+  **Future Enhancements:**
+  - VPC Peering for private connectivity
+  - Private endpoints (no public exposure)
+  - Cloud NAT for consistent egress IPs
 end note
 
 note left of LoadBalancer

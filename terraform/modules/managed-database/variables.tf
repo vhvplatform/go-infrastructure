@@ -8,7 +8,7 @@ variable "cluster_name" {
   type        = string
   
   validation {
-    condition     = can(regex("^[a-zA-Z0-9][a-zA-Z0-9-]{0,62}[a-zA-Z0-9]$", var.cluster_name)) && length(var.cluster_name) >= 2
+    condition     = can(regex("^[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]$", var.cluster_name)) && length(var.cluster_name) >= 2 && length(var.cluster_name) <= 64
     error_message = "The cluster_name must be 2-64 characters, start and end with alphanumeric characters, and contain only alphanumeric characters and hyphens."
   }
 }
@@ -36,8 +36,8 @@ variable "mongodb_version" {
   default     = "7.0"
   
   validation {
-    condition     = can(regex("^[4-7]\\.[0-9]+$", var.mongodb_version))
-    error_message = "The mongodb_version must be a valid version (e.g., 4.4, 5.0, 6.0, 7.0)."
+    condition     = can(regex("^[4-9]\\.[0-9]+$", var.mongodb_version))
+    error_message = "The mongodb_version must be a valid version format (e.g., 4.4, 5.0, 6.0, 7.0). Note: Update validation range when new major versions are released."
   }
 }
 

@@ -13,8 +13,8 @@ variable "cluster_name" {
   type        = string
   
   validation {
-    condition     = can(regex("^[a-z][a-z0-9-]{0,39}$", var.cluster_name))
-    error_message = "The cluster_name must start with a letter, contain only lowercase letters, numbers, and hyphens, and be 1-40 characters long."
+    condition     = can(regex("^[a-z]([a-z0-9-]{0,38}[a-z0-9])?$", var.cluster_name))
+    error_message = "The cluster_name must start with a letter, end with a letter or number, contain only lowercase letters, numbers, and hyphens, and be 1-40 characters long."
   }
 }
 
