@@ -69,7 +69,7 @@ cloud "Internet" as Internet #FFE0B2 {
 
 cloud "MongoDB Atlas" as MongoDBAtlas #DB_COLOR {
     database "MongoDB Cluster" as MongoDB {
-        rectangle "VPC Peering\n10.3.0.0/16" as MongoPeering
+        rectangle "VPC Peering (Optional)\n10.3.0.0/16" as MongoPeering
         rectangle "Primary: 10.3.0.10" as MongoPrimary
         rectangle "Secondary: 10.3.0.11" as MongoSecondary1
         rectangle "Secondary: 10.3.0.12" as MongoSecondary2
@@ -86,7 +86,7 @@ CloudNAT --> Internet : NAT translation
 Node1 --> MongoDB : Database connection
 Node2 --> MongoDB : Database connection
 Node3 --> MongoDB : Database connection
-VPC --> MongoPeering : VPC Peering (optional)
+VPC -.> MongoPeering : VPC Peering (Optional)
 
 ' Additional connections
 Devs --> Internet
@@ -114,7 +114,7 @@ note right of MongoDB
   - Private endpoints only
   - IP whitelist configured
   - TLS 1.2+ required
-  - VPC Peering (optional)
+  - VPC Peering (optional, not yet implemented)
 end note
 
 note left of LoadBalancer

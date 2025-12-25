@@ -8,8 +8,8 @@ variable "cluster_name" {
   type        = string
   
   validation {
-    condition     = can(regex("^[a-zA-Z0-9][a-zA-Z0-9-]{0,62}[a-zA-Z0-9]$", var.cluster_name))
-    error_message = "The cluster_name must be 1-64 characters, start and end with alphanumeric characters, and contain only alphanumeric characters and hyphens."
+    condition     = can(regex("^[a-zA-Z0-9][a-zA-Z0-9-]{0,62}[a-zA-Z0-9]$", var.cluster_name)) && length(var.cluster_name) >= 2
+    error_message = "The cluster_name must be 2-64 characters, start and end with alphanumeric characters, and contain only alphanumeric characters and hyphens."
   }
 }
 
@@ -48,7 +48,7 @@ variable "electable_nodes" {
   
   validation {
     condition     = var.electable_nodes >= 3 && var.electable_nodes <= 50 && var.electable_nodes % 2 == 1
-    error_message = "The electable_nodes must be an odd number between 3 and 50 for proper replica set voting."
+    error_message = "The electable_nodes must be an odd number between 3 and 50 (minimum 3 required for proper replica set voting)."
   }
 }
 
