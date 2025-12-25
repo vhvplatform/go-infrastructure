@@ -6,6 +6,11 @@ variable "project_id" {
 variable "cluster_name" {
   description = "Name of the MongoDB cluster"
   type        = string
+  
+  validation {
+    condition     = can(regex("^[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]$", var.cluster_name)) && length(var.cluster_name) >= 2 && length(var.cluster_name) <= 64
+    error_message = "The cluster_name must be 2-64 characters, start and end with alphanumeric characters, and contain only alphanumeric characters and hyphens."
+  }
 }
 
 variable "region" {
@@ -18,18 +23,33 @@ variable "instance_size" {
   description = "MongoDB instance size (M10, M20, M30, etc.)"
   type        = string
   default     = "M10"
+  
+  validation {
+    condition     = can(regex("^M(10|20|30|40|50|60|80|140|200|300|400|700|800|1000|1700)$", var.instance_size))
+    error_message = "The instance_size must be a valid MongoDB Atlas cluster tier (M10, M20, M30, M40, M50, M60, M80, M140, M200, M300, M400, M700, M800, M1000, M1700)."
+  }
 }
 
 variable "mongodb_version" {
   description = "MongoDB major version"
   type        = string
   default     = "7.0"
+  
+  validation {
+    condition     = can(regex("^(4\\.[4-9]|[5-9]\\.[0-9]+)$", var.mongodb_version))
+    error_message = "The mongodb_version must be a supported version (e.g., 4.4, 4.9, 5.0, 6.0, 7.0, 8.0). MongoDB 4.2 and earlier are deprecated."
+  }
 }
 
 variable "electable_nodes" {
   description = "Number of electable nodes"
   type        = number
   default     = 3
+  
+  validation {
+    condition     = var.electable_nodes >= 3 && var.electable_nodes <= 50 && var.electable_nodes % 2 == 1
+    error_message = "The electable_nodes must be an odd number between 3 and 50 (minimum 3 required for proper replica set voting)."
+  }
 }
 
 variable "read_only_nodes" {

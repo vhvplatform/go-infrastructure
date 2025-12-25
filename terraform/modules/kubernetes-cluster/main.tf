@@ -1,13 +1,23 @@
 terraform {
-  required_version = ">= 1.5.0"
+  required_version = ">= 1.10.0"
   
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = "~> 5.0"
+      version = "~> 6.0"
     }
   }
 }
+
+# ============================================================================
+# GKE Cluster Configuration
+# ============================================================================
+# This module creates a Google Kubernetes Engine (GKE) cluster with:
+# - VPC-native networking for optimized pod-to-pod communication
+# - Separate managed node pools for flexibility
+# - Workload Identity for secure service account authentication
+# - Auto-scaling capabilities for cost optimization
+# ============================================================================
 
 resource "google_container_cluster" "primary" {
   name     = var.cluster_name
@@ -22,15 +32,16 @@ resource "google_container_cluster" "primary" {
   network    = var.network
   subnetwork = var.subnetwork
   
-  # Configuration options
+  # VPC-native networking enables IP aliasing and improves network performance
   networking_mode = "VPC_NATIVE"
   
+  # IP allocation for pods and services using secondary IP ranges
   ip_allocation_policy {
     cluster_secondary_range_name  = var.pods_range_name
     services_secondary_range_name = var.services_range_name
   }
   
-  # Master authorized networks
+  # Control plane access - restrict which networks can access the cluster API
   master_authorized_networks_config {
     dynamic "cidr_blocks" {
       for_each = var.authorized_networks
@@ -41,23 +52,26 @@ resource "google_container_cluster" "primary" {
     }
   }
   
-  # Maintenance window
+  # Maintenance window configuration - minimize disruption during updates
   maintenance_policy {
     daily_maintenance_window {
       start_time = var.maintenance_start_time
     }
   }
   
-  # Workload Identity
+  # Workload Identity enables pods to authenticate as GCP service accounts
+  # This is more secure than using node service accounts
   workload_identity_config {
     workload_pool = "${var.project_id}.svc.id.goog"
   }
   
-  # Release channel
+  # Release channel determines the cadence of cluster upgrades
+  # RAPID: Weekly, REGULAR: Every few weeks, STABLE: Every few months
   release_channel {
     channel = var.release_channel
   }
   
+  # Essential cluster addons
   addons_config {
     http_load_balancing {
       disabled = false
@@ -68,17 +82,26 @@ resource "google_container_cluster" "primary" {
   }
 }
 
+# ============================================================================
+# Node Pool Configuration
+# ============================================================================
+# Separate node pool allows independent scaling and upgrades without
+# affecting the control plane
+# ============================================================================
+
 resource "google_container_node_pool" "primary_nodes" {
   name       = "${var.cluster_name}-node-pool"
   location   = var.region
   cluster    = google_container_cluster.primary.name
   node_count = var.initial_node_count
   
+  # Enable auto-scaling to handle variable workloads efficiently
   autoscaling {
     min_node_count = var.min_node_count
     max_node_count = var.max_node_count
   }
   
+  # Auto-repair and auto-upgrade ensure nodes stay healthy and up-to-date
   management {
     auto_repair  = true
     auto_upgrade = true
@@ -99,11 +122,12 @@ resource "google_container_node_pool" "primary_nodes" {
     labels = var.node_labels
     tags   = var.node_tags
     
-    # Workload Identity
+    # Enable Workload Identity on nodes
     workload_metadata_config {
       mode = "GKE_METADATA"
     }
     
+    # Disable legacy metadata endpoints for improved security
     metadata = {
       disable-legacy-endpoints = "true"
     }

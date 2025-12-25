@@ -1,0 +1,27 @@
+# ============================================================================
+# Production Environment Configuration Example
+# ============================================================================
+# Copy this file to terraform.tfvars and fill in with your actual values
+# Never commit terraform.tfvars to version control!
+# ============================================================================
+
+# GCP Configuration
+project_id = "your-gcp-project-id-production"
+region     = "us-central1"
+
+# MongoDB Atlas Configuration
+mongodb_atlas_project_id = "your-mongodb-atlas-project-id-production"
+mongodb_atlas_public_key = "your-mongodb-atlas-public-key"
+mongodb_atlas_private_key = "your-mongodb-atlas-private-key"
+
+# Database Credentials
+mongodb_username = "saas_prod_user"
+mongodb_password = "your-strong-secure-password-here"
+
+# Network Security
+# IMPORTANT: Restrict this to only necessary IPs in production!
+# Do NOT use 0.0.0.0/0 in production
+mongodb_ip_whitelist = [
+  "10.0.0.0/16",      # GKE cluster CIDR
+  "YOUR_OFFICE_IP/32" # Office IP for administration
+]

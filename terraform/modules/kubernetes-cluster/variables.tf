@@ -1,11 +1,21 @@
 variable "project_id" {
   description = "GCP Project ID"
   type        = string
+  
+  validation {
+    condition     = can(regex("^[a-z]([a-z0-9-]{4,28}[a-z0-9])?$", var.project_id)) && length(var.project_id) >= 6 && length(var.project_id) <= 30
+    error_message = "The project_id must be between 6 and 30 characters, start with a lowercase letter, and contain only lowercase letters, numbers, and hyphens."
+  }
 }
 
 variable "cluster_name" {
   description = "Name of the GKE cluster"
   type        = string
+  
+  validation {
+    condition     = can(regex("^[a-z]([a-z0-9-]{1,38}[a-z0-9])?$", var.cluster_name)) && length(var.cluster_name) >= 3 && length(var.cluster_name) <= 40
+    error_message = "The cluster_name must be 3-40 characters, start with a letter, end with a letter or number, and contain only lowercase letters, numbers, and hyphens."
+  }
 }
 
 variable "region" {
@@ -42,18 +52,33 @@ variable "initial_node_count" {
   description = "Initial number of nodes in the cluster"
   type        = number
   default     = 3
+  
+  validation {
+    condition     = var.initial_node_count >= 1 && var.initial_node_count <= 100
+    error_message = "The initial_node_count must be between 1 and 100."
+  }
 }
 
 variable "min_node_count" {
   description = "Minimum number of nodes"
   type        = number
   default     = 1
+  
+  validation {
+    condition     = var.min_node_count >= 0 && var.min_node_count <= 100
+    error_message = "The min_node_count must be between 0 and 100."
+  }
 }
 
 variable "max_node_count" {
   description = "Maximum number of nodes"
   type        = number
   default     = 10
+  
+  validation {
+    condition     = var.max_node_count >= 1 && var.max_node_count <= 1000
+    error_message = "The max_node_count must be between 1 and 1000."
+  }
 }
 
 variable "machine_type" {
@@ -117,4 +142,9 @@ variable "release_channel" {
   description = "GKE release channel"
   type        = string
   default     = "REGULAR"
+  
+  validation {
+    condition     = contains(["RAPID", "REGULAR", "STABLE"], var.release_channel)
+    error_message = "The release_channel must be one of: RAPID, REGULAR, STABLE."
+  }
 }

@@ -1,0 +1,177 @@
+@startuml deployment-diagram
+!theme plain
+skinparam backgroundColor #FFFFFF
+
+title Deployment and CI/CD Flow
+
+!define DEV_COLOR #E8F5E9
+!define CI_COLOR #FFF3E0
+!define DEPLOY_COLOR #E1F5FE
+!define PROD_COLOR #FCE4EC
+
+|Developer|
+start
+:Code Changes;
+:Commit & Push to GitHub;
+
+|GitHub Actions|
+:Trigger CI Pipeline;
+partition "Build Phase" #CI_COLOR {
+    :Run Linters;
+    :Run Unit Tests;
+    :Build Docker Image;
+    :Push to GCR;
+    :Security Scan (Trivy);
+}
+
+|GitHub Actions|
+if (Branch?) then (main)
+    partition "Development Deployment" #DEV_COLOR {
+        :Update Dev Manifests;
+        :Push to Git;
+        
+        |ArgoCD|
+        :Detect Changes;
+        :Sync Application;
+        :Deploy to Dev Namespace;
+        
+        |Kubernetes|
+        :Rolling Update;
+        :Health Checks;
+        :Service Ready;
+    }
+    
+    |Monitoring|
+    :Prometheus Metrics;
+    :Grafana Dashboards;
+    :Alert if Issues;
+    
+else (release/*)
+    partition "Staging Deployment" {
+        :Tag Release;
+        :Update Staging Manifests;
+        
+        |ArgoCD|
+        :Auto-sync to Staging;
+        :Deploy to Staging;
+        
+        |Testing|
+        :Integration Tests;
+        :E2E Tests;
+        :Performance Tests;
+    }
+    
+    if (Tests Pass?) then (yes)
+        :Approval Needed;
+        
+        |Release Manager|
+        :Manual Approval;
+        
+        if (Approved?) then (yes)
+            partition "Production Deployment" #PROD_COLOR {
+                :Update Prod Manifests;
+                
+                |ArgoCD|
+                :Manual Sync;
+                :Blue-Green Deployment;
+                :Canary Analysis;
+                
+                if (Metrics OK?) then (yes)
+                    :Promote to Production;
+                    :Update DNS;
+                    |Monitoring|
+                    :Monitor Production;
+                    stop
+                else (no)
+                    :Automatic Rollback;
+                    :Notify Team;
+                    stop
+                endif
+            }
+        else (no)
+            :Deployment Cancelled;
+            stop
+        endif
+    else (no)
+        :Notify Team;
+        :Fix Issues;
+        stop
+    endif
+else (feature/*)
+    :Skip Deployment;
+    :Review Only;
+    stop
+endif
+
+' Infrastructure Deployment Flow
+|Infrastructure Team|
+partition "Terraform Deployment" #DEPLOY_COLOR {
+    start
+    :Update Terraform Code;
+    :Run terraform plan;
+    :Review Changes;
+    
+    if (Changes OK?) then (yes)
+        :Run terraform apply;
+        
+        |Terraform|
+        :Provision GKE Cluster;
+        :Configure Node Pools;
+        :Setup MongoDB Atlas;
+        :Configure Networking;
+        
+        :Update State File;
+        :Generate Outputs;
+        
+        |Post-Deployment|
+        :Configure kubectl;
+        :Install ArgoCD;
+        :Setup Monitoring;
+        :Verify Health;
+        stop
+    else (no)
+        :Revise Changes;
+        stop
+    endif
+}
+
+note right of "Build Phase"
+  **CI Pipeline Steps:**
+  1. Lint code (golangci-lint)
+  2. Run unit tests
+  3. Build Docker image
+  4. Tag with commit SHA
+  5. Push to GCR
+  6. Security scanning
+  7. Generate SBOM
+end note
+
+note right of "Development Deployment"
+  **GitOps Workflow:**
+  - ArgoCD watches Git repo
+  - Auto-sync on changes
+  - Self-healing enabled
+  - Rollback on failures
+  - Drift detection
+end note
+
+note right of "Production Deployment"
+  **Production Strategy:**
+  - Manual approval required
+  - Blue-green deployment
+  - Canary analysis (10%)
+  - Gradual rollout
+  - Automated rollback
+  - Health checks
+end note
+
+note bottom of "Terraform Deployment"
+  **Infrastructure Changes:**
+  - Always use terraform plan first
+  - Test in dev environment
+  - Document changes
+  - Backup state files
+  - Review cost impact
+end note
+
+@enduml
