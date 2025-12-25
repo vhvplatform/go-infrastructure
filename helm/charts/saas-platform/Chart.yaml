@@ -1,0 +1,60 @@
+apiVersion: v2
+name: saas-platform
+description: SaaS Platform - All-in-one deployment
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - saas
+  - microservices
+  - golang
+  - kubernetes
+  - multi-tenancy
+maintainers:
+  - name: SaaS Framework Team
+    email: team@saas-framework.io
+sources:
+  - https://github.com/longvhv/saas-framework-go
+  - https://github.com/longvhv/saas-infrastructure
+
+dependencies:
+  - name: infrastructure
+    version: 1.0.0
+    repository: "file://../infrastructure"
+    condition: infrastructure.enabled
+  
+  - name: api-gateway
+    version: 1.0.0
+    repository: "file://../microservices"
+    alias: apiGateway
+    condition: services.apiGateway.enabled
+  
+  - name: auth-service
+    version: 1.0.0
+    repository: "file://../microservices"
+    alias: authService
+    condition: services.authService.enabled
+  
+  - name: user-service
+    version: 1.0.0
+    repository: "file://../microservices"
+    alias: userService
+    condition: services.userService.enabled
+  
+  - name: tenant-service
+    version: 1.0.0
+    repository: "file://../microservices"
+    alias: tenantService
+    condition: services.tenantService.enabled
+  
+  - name: notification-service
+    version: 1.0.0
+    repository: "file://../microservices"
+    alias: notificationService
+    condition: services.notificationService.enabled
+  
+  - name: system-config-service
+    version: 1.0.0
+    repository: "file://../microservices"
+    alias: systemConfigService
+    condition: services.systemConfigService.enabled

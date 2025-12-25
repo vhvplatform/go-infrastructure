@@ -1,0 +1,176 @@
+# SaaS Infrastructure
+
+Infrastructure as Code (IaC) for the SaaS Platform microservices.
+
+## 📁 Repository Structure
+
+```
+infrastructure/
+├── kubernetes/          # Kubernetes manifests with Kustomize
+│   ├── base/           # Base manifests
+│   └── overlays/       # Environment-specific overlays (dev/staging/prod)
+├── helm/               # Helm charts for deployment
+│   └── charts/
+│       ├── saas-platform/      # Umbrella chart
+│       ├── infrastructure/      # Infrastructure components
+│       └── microservices/       # Reusable service template
+├── terraform/          # Infrastructure provisioning
+│   ├── modules/        # Reusable Terraform modules
+│   └── environments/   # Environment-specific configs
+├── argocd/            # GitOps configurations
+│   ├── applications/  # ArgoCD application manifests
+│   └── app-of-apps.yaml
+├── monitoring/        # Observability configs
+│   ├── prometheus/    # Metrics collection
+│   ├── grafana/       # Dashboards
+│   ├── loki/          # Log aggregation
+│   └── alerts/        # Alert configurations
+├── scripts/           # Deployment automation scripts
+└── docs/              # Documentation
+```
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- `kubectl` v1.27+
+- `kustomize` v5.0+
+- `helm` v3.12+
+- `terraform` v1.5+ (optional)
+- Access to a Kubernetes cluster
+
+### Deploy to Development
+
+```bash
+cd infrastructure
+./scripts/deploy.sh dev
+```
+
+### Deploy to Production
+
+```bash
+cd infrastructure
+./scripts/deploy.sh production helm
+```
+
+## 📦 Deployment Methods
+
+### 1. Kubectl + Kustomize
+
+```bash
+# Dry-run
+kubectl apply -k kubernetes/overlays/dev --dry-run=server
+
+# Apply
+kubectl apply -k kubernetes/overlays/dev
+```
+
+### 2. Helm
+
+```bash
+helm upgrade --install saas-platform helm/charts/saas-platform \
+  -f helm/charts/saas-platform/values.dev.yaml \
+  --namespace saas-framework-dev \
+  --create-namespace
+```
+
+### 3. ArgoCD (GitOps)
+
+```bash
+# Install ArgoCD
+kubectl create namespace argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+# Deploy app-of-apps
+kubectl apply -f argocd/app-of-apps.yaml
+```
+
+## 🌍 Environments
+
+| Environment | Namespace | Auto-deploy | Replicas | Resources |
+|------------|-----------|-------------|----------|-----------|
+| **Development** | `saas-framework-dev` | ✅ Yes (main) | 1 | Low |
+| **Staging** | `saas-framework-staging` | ✅ Yes (release/*) | 2 | Medium |
+| **Production** | `saas-framework-prod` | ❌ Manual | 3-5 | High |
+
+## 📊 Monitoring
+
+Access monitoring dashboards:
+
+```bash
+# Port-forward Grafana
+kubectl port-forward -n saas-framework svc/grafana 3000:3000
+
+# Port-forward Prometheus
+kubectl port-forward -n saas-framework svc/prometheus 9090:9090
+```
+
+## 🔐 Secret Management
+
+```bash
+# Create secrets
+./scripts/secrets-mgmt.sh dev create
+
+# Update a secret
+./scripts/secrets-mgmt.sh dev update JWT_SECRET "new-value"
+
+# View secrets
+./scripts/secrets-mgmt.sh dev view
+```
+
+## 🔄 Rollback
+
+```bash
+# Rollback to previous version
+./scripts/rollback.sh production 1
+
+# Rollback to specific revision
+./scripts/rollback.sh production 3
+```
+
+## ✅ Validation
+
+```bash
+# Validate all manifests
+./scripts/validate-manifests.sh dev
+
+# Validate specific environment
+./scripts/validate-manifests.sh production
+```
+
+## 📚 Documentation
+
+- [Deployment Guide](docs/DEPLOYMENT.md) - Detailed deployment instructions
+- [Architecture](docs/ARCHITECTURE.md) - Infrastructure architecture
+- [GitOps Workflow](docs/GITOPS.md) - GitOps best practices
+- [Troubleshooting](docs/TROUBLESHOOTING.md) - Common issues and solutions
+- [Extraction Guide](EXTRACTION_GUIDE.md) - How to extract to separate repo
+
+### Environment-specific Docs
+
+- [Development](docs/environments/dev.md)
+- [Staging](docs/environments/staging.md)
+- [Production](docs/environments/production.md)
+
+## 🤝 Contributing
+
+1. Create a feature branch
+2. Make your changes
+3. Run validation: `./scripts/validate-manifests.sh dev`
+4. Submit a pull request
+
+## 📝 License
+
+See [LICENSE](LICENSE) file for details.
+
+## 🆘 Support
+
+- Create an issue in the repository
+- Contact: team@saas-framework.io
+- Slack: #saas-infrastructure
+
+## 🔗 Related Repositories
+
+- [saas-framework-go](https://github.com/longvhv/saas-framework-go) - Main monorepo
+- [saas-shared-go](https://github.com/longvhv/saas-shared-go) - Shared libraries
+- Individual service repositories (after extraction)

@@ -1,0 +1,50 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: saas-framework-staging
+
+resources:
+  - ../../base
+
+namePrefix: staging-
+
+replicas:
+  - name: api-gateway
+    count: 2
+  - name: auth-service
+    count: 2
+  - name: user-service
+    count: 2
+  - name: tenant-service
+    count: 2
+  - name: notification-service
+    count: 2
+  - name: system-config-service
+    count: 1
+
+configMapGenerator:
+  - name: env-config
+    literals:
+      - ENVIRONMENT=staging
+      - LOG_LEVEL=info
+      - MONGODB_DATABASE=saas_staging
+
+images:
+  - name: api-gateway
+    newName: ghcr.io/longvhv/saas-api-gateway
+    newTag: staging
+  - name: auth-service
+    newName: ghcr.io/longvhv/saas-auth-service
+    newTag: staging
+  - name: user-service
+    newName: ghcr.io/longvhv/saas-user-service
+    newTag: staging
+  - name: tenant-service
+    newName: ghcr.io/longvhv/saas-tenant-service
+    newTag: staging
+  - name: notification-service
+    newName: ghcr.io/longvhv/saas-notification-service
+    newTag: staging
+  - name: system-config-service
+    newName: ghcr.io/longvhv/saas-system-config-service
+    newTag: staging

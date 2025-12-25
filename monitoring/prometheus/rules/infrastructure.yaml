@@ -1,0 +1,54 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: infrastructure-alerts
+  namespace: saas-framework
+spec:
+  groups:
+    - name: infrastructure_health
+      interval: 30s
+      rules:
+        - alert: MongoDBDown
+          expr: up{job="mongodb"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "MongoDB is down"
+            description: "MongoDB has been down for more than 5 minutes."
+        
+        - alert: RedisDown
+          expr: up{job="redis"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Redis is down"
+            description: "Redis has been down for more than 5 minutes."
+        
+        - alert: RabbitMQDown
+          expr: up{job="rabbitmq"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "RabbitMQ is down"
+            description: "RabbitMQ has been down for more than 5 minutes."
+        
+        - alert: HighDiskUsage
+          expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) < 0.1
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High disk usage on {{ $labels.instance }}"
+            description: "Disk usage is at {{ $value | humanizePercentage }} on {{ $labels.instance }}."
+        
+        - alert: PodCrashLooping
+          expr: rate(kube_pod_container_status_restarts_total[15m]) > 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod {{ $labels.pod }} is crash looping"
+            description: "Pod {{ $labels.pod }} has restarted {{ $value }} times in the last 15 minutes."

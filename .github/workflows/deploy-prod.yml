@@ -1,0 +1,70 @@
+name: Deploy to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to deploy'
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    name: Deploy to Production Environment
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.version }}
+      
+      - name: Setup Kustomize
+        run: |
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          sudo mv kustomize /usr/local/bin/
+      
+      - name: Configure kubectl
+        uses: azure/k8s-set-context@v3
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBECONFIG_PROD }}
+      
+      - name: Backup current deployment
+        run: |
+          kubectl get all -n saas-framework-prod -o yaml > /tmp/backup-$(date +%Y%m%d-%H%M%S).yaml
+      
+      - name: Deploy infrastructure
+        run: |
+          cd infrastructure
+          kubectl apply -k kubernetes/overlays/production
+      
+      - name: Wait for deployments
+        run: |
+          kubectl rollout status deployment -n saas-framework-prod --timeout=15m
+      
+      - name: Verify deployment
+        run: |
+          kubectl get pods -n saas-framework-prod
+          kubectl get svc -n saas-framework-prod
+      
+      - name: Run health checks
+        run: |
+          echo "Running health checks..."
+          # Add health check scripts here
+          sleep 30
+          kubectl get pods -n saas-framework-prod --field-selector=status.phase!=Running
+      
+      - name: Notify deployment
+        if: always()
+        run: |
+          echo "Production deployment completed"
+          echo "Version: ${{ inputs.version }}"
+          echo "Status: ${{ job.status }}"
+      
+      - name: Rollback on failure
+        if: failure()
+        run: |
+          echo "Deployment failed, initiating rollback..."
+          kubectl rollout undo deployment -n saas-framework-prod

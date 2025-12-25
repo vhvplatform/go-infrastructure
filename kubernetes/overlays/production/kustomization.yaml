@@ -1,0 +1,54 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: saas-framework-prod
+
+resources:
+  - ../../base
+
+namePrefix: prod-
+
+replicas:
+  - name: api-gateway
+    count: 5
+  - name: auth-service
+    count: 3
+  - name: user-service
+    count: 3
+  - name: tenant-service
+    count: 3
+  - name: notification-service
+    count: 3
+  - name: system-config-service
+    count: 2
+
+configMapGenerator:
+  - name: env-config
+    literals:
+      - ENVIRONMENT=production
+      - LOG_LEVEL=info
+      - MONGODB_DATABASE=saas_prod
+
+images:
+  - name: api-gateway
+    newName: ghcr.io/longvhv/saas-api-gateway
+    newTag: v1.0.0
+  - name: auth-service
+    newName: ghcr.io/longvhv/saas-auth-service
+    newTag: v1.0.0
+  - name: user-service
+    newName: ghcr.io/longvhv/saas-user-service
+    newTag: v1.0.0
+  - name: tenant-service
+    newName: ghcr.io/longvhv/saas-tenant-service
+    newTag: v1.0.0
+  - name: notification-service
+    newName: ghcr.io/longvhv/saas-notification-service
+    newTag: v1.0.0
+  - name: system-config-service
+    newName: ghcr.io/longvhv/saas-system-config-service
+    newTag: v1.0.0
+
+# Note: Resource limits and PDB patches need to reference prefixed names (prod-*)
+# For now, these should be configured in base manifests or via strategic merge patches
+# that account for the namePrefix

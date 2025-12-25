@@ -1,0 +1,156 @@
+{
+  "dashboard": {
+    "title": "SaaS Framework Overview",
+    "tags": ["saas-framework", "microservices"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Request Rate (req/s)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(http_requests_total[5m])) by (service)",
+            "legendFormat": "{{ service }}"
+          }
+        ],
+        "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8}
+      },
+      {
+        "id": 2,
+        "title": "Error Rate (%)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(http_requests_total{status=~\"5..\"}[5m])) by (service) / sum(rate(http_requests_total[5m])) by (service) * 100",
+            "legendFormat": "{{ service }}"
+          }
+        ],
+        "gridPos": {"x": 12, "y": 0, "w": 12, "h": 8}
+      },
+      {
+        "id": 3,
+        "title": "P95 Latency (ms)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service)) * 1000",
+            "legendFormat": "{{ service }}"
+          }
+        ],
+        "gridPos": {"x": 0, "y": 8, "w": 12, "h": 8}
+      },
+      {
+        "id": 4,
+        "title": "Active Pods",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "count(up{job=~\".*-service\"} == 1) by (job)",
+            "legendFormat": "{{ job }}"
+          }
+        ],
+        "gridPos": {"x": 12, "y": 8, "w": 6, "h": 4}
+      },
+      {
+        "id": 5,
+        "title": "CPU Usage by Service (%)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(container_cpu_usage_seconds_total{pod=~\".*-service.*\"}[5m])) by (pod) * 100",
+            "legendFormat": "{{ pod }}"
+          }
+        ],
+        "gridPos": {"x": 0, "y": 16, "w": 12, "h": 8}
+      },
+      {
+        "id": 6,
+        "title": "Memory Usage by Service (MB)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(container_memory_usage_bytes{pod=~\".*-service.*\"}) by (pod) / 1024 / 1024",
+            "legendFormat": "{{ pod }}"
+          }
+        ],
+        "gridPos": {"x": 12, "y": 16, "w": 12, "h": 8}
+      },
+      {
+        "id": 7,
+        "title": "MongoDB Connections",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "mongodb_connections",
+            "legendFormat": "{{ state }}"
+          }
+        ],
+        "gridPos": {"x": 0, "y": 24, "w": 8, "h": 6}
+      },
+      {
+        "id": 8,
+        "title": "Redis Memory Usage (MB)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "redis_memory_used_bytes / 1024 / 1024",
+            "legendFormat": "Used Memory"
+          }
+        ],
+        "gridPos": {"x": 8, "y": 24, "w": 8, "h": 6}
+      },
+      {
+        "id": 9,
+        "title": "RabbitMQ Queue Size",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rabbitmq_queue_messages",
+            "legendFormat": "{{ queue }}"
+          }
+        ],
+        "gridPos": {"x": 16, "y": 24, "w": 8, "h": 6}
+      },
+      {
+        "id": 10,
+        "title": "Authentication Success Rate (%)",
+        "type": "gauge",
+        "targets": [
+          {
+            "expr": "(sum(rate(auth_success_total[5m])) / sum(rate(auth_attempts_total[5m]))) * 100",
+            "legendFormat": "Success Rate"
+          }
+        ],
+        "gridPos": {"x": 0, "y": 30, "w": 6, "h": 6}
+      },
+      {
+        "id": 11,
+        "title": "Notifications Sent (last 1h)",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(increase(notifications_sent_total[1h]))",
+            "legendFormat": "Total"
+          }
+        ],
+        "gridPos": {"x": 6, "y": 30, "w": 6, "h": 6}
+      },
+      {
+        "id": 12,
+        "title": "Rate Limit Hits (req/s)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(rate_limit_exceeded_total[5m])) by (tenant_id)",
+            "legendFormat": "{{ tenant_id }}"
+          }
+        ],
+        "gridPos": {"x": 12, "y": 30, "w": 12, "h": 6}
+      }
+    ],
+    "refresh": "30s",
+    "schemaVersion": 27,
+    "version": 1
+  }
+}

@@ -1,0 +1,50 @@
+name: Deploy to Development
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'kubernetes/**'
+      - 'helm/**'
+      - 'argocd/**'
+
+jobs:
+  deploy:
+    name: Deploy to Dev Environment
+    runs-on: ubuntu-latest
+    environment: development
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Kustomize
+        run: |
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          sudo mv kustomize /usr/local/bin/
+      
+      - name: Configure kubectl
+        uses: azure/k8s-set-context@v3
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBECONFIG_DEV }}
+      
+      - name: Deploy infrastructure
+        run: |
+          cd infrastructure
+          kubectl apply -k kubernetes/overlays/dev
+      
+      - name: Wait for deployments
+        run: |
+          kubectl rollout status deployment -n saas-framework-dev --timeout=10m
+      
+      - name: Verify deployment
+        run: |
+          kubectl get pods -n saas-framework-dev
+          kubectl get svc -n saas-framework-dev
+      
+      - name: Notify deployment
+        if: always()
+        run: |
+          echo "Deployment to development completed"
+          echo "Status: ${{ job.status }}"

@@ -1,0 +1,169 @@
+## Global settings
+global:
+  environment: production
+  domain: example.com
+  registry: ghcr.io/longvhv
+
+## Infrastructure components
+infrastructure:
+  enabled: true
+  mongodb:
+    enabled: true
+    replicas: 1
+    persistence:
+      size: 10Gi
+  redis:
+    enabled: true
+    replicas: 1
+  rabbitmq:
+    enabled: true
+    replicas: 1
+    persistence:
+      size: 5Gi
+
+## Services configuration
+services:
+  apiGateway:
+    enabled: true
+    name: api-gateway
+    replicas: 3
+    image:
+      repository: ghcr.io/longvhv/saas-api-gateway
+      tag: v1.0.0
+      pullPolicy: IfNotPresent
+    service:
+      type: ClusterIP
+      port: 8080
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+    autoscaling:
+      enabled: true
+      minReplicas: 3
+      maxReplicas: 10
+      targetCPUUtilizationPercentage: 80
+    
+  authService:
+    enabled: true
+    name: auth-service
+    replicas: 3
+    image:
+      repository: ghcr.io/longvhv/saas-auth-service
+      tag: v1.0.0
+      pullPolicy: IfNotPresent
+    service:
+      type: ClusterIP
+      port: 50051
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+    
+  userService:
+    enabled: true
+    name: user-service
+    replicas: 3
+    image:
+      repository: ghcr.io/longvhv/saas-user-service
+      tag: v1.0.0
+      pullPolicy: IfNotPresent
+    service:
+      type: ClusterIP
+      port: 50052
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+    
+  tenantService:
+    enabled: true
+    name: tenant-service
+    replicas: 3
+    image:
+      repository: ghcr.io/longvhv/saas-tenant-service
+      tag: v1.0.0
+      pullPolicy: IfNotPresent
+    service:
+      type: ClusterIP
+      port: 50053
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+    
+  notificationService:
+    enabled: true
+    name: notification-service
+    replicas: 3
+    image:
+      repository: ghcr.io/longvhv/saas-notification-service
+      tag: v1.0.0
+      pullPolicy: IfNotPresent
+    service:
+      type: ClusterIP
+      port: 8084
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+    
+  systemConfigService:
+    enabled: true
+    name: system-config-service
+    replicas: 2
+    image:
+      repository: ghcr.io/longvhv/saas-system-config-service
+      tag: v1.0.0
+      pullPolicy: IfNotPresent
+    service:
+      type: ClusterIP
+      port: 50054
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+
+## Ingress configuration
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: api.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: api-tls
+      hosts:
+        - api.example.com
+
+## Monitoring
+monitoring:
+  enabled: true
+  prometheus:
+    enabled: true
+  grafana:
+    enabled: true
+  loki:
+    enabled: true

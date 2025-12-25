@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: saas-infrastructure-production
+  namespace: argocd
+  labels:
+    environment: production
+spec:
+  project: saas-platform
+  
+  source:
+    repoURL: https://github.com/longvhv/saas-infrastructure
+    targetRevision: main
+    path: kubernetes/overlays/production
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: saas-framework-prod
+  
+  syncPolicy:
+    # Manual sync for production
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m

@@ -1,0 +1,22 @@
+# terraform.tfvars.example
+#
+# Copy this file to terraform.tfvars and fill in your values
+# DO NOT commit terraform.tfvars to git
+
+# GCP Configuration
+project_id = "my-gcp-project-id"
+region     = "us-central1"
+
+# MongoDB Atlas Configuration
+mongodb_atlas_project_id = "my-mongodb-atlas-project-id"
+mongodb_username         = "saas_dev_user"
+
+# IP Whitelist for MongoDB
+mongodb_ip_whitelist = [
+  "0.0.0.0/0"  # Allow all (for dev only - restrict in production)
+]
+
+# Sensitive values - Set via environment variables:
+# export TF_VAR_mongodb_atlas_public_key="your-atlas-public-key"
+# export TF_VAR_mongodb_atlas_private_key="your-atlas-private-key"
+# export TF_VAR_mongodb_password="your-secure-password"

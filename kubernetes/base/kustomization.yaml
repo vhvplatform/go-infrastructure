@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: saas-framework
+
+resources:
+  - namespace.yaml
+  - configmaps/app-config.yaml
+  - infrastructure/mongodb/deployment.yaml
+  - infrastructure/mongodb/service.yaml
+  - infrastructure/mongodb/pvc.yaml
+  - infrastructure/redis/deployment.yaml
+  - infrastructure/redis/service.yaml
+  - infrastructure/rabbitmq/deployment.yaml
+  - infrastructure/rabbitmq/service.yaml
+  - infrastructure/rabbitmq/pvc.yaml
+  - services/api-gateway/deployment.yaml
+  - services/auth-service/deployment.yaml
+  - services/user-service/deployment.yaml
+  - services/tenant-service/deployment.yaml
+  - services/notification-service/deployment.yaml
+  - services/system-config-service/deployment.yaml
+  - ingress/ingress.yaml

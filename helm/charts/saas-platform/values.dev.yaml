@@ -1,0 +1,102 @@
+## Development environment overrides
+global:
+  environment: development
+  domain: dev.example.com
+
+infrastructure:
+  mongodb:
+    replicas: 1
+    persistence:
+      size: 5Gi
+  redis:
+    replicas: 1
+  rabbitmq:
+    replicas: 1
+    persistence:
+      size: 2Gi
+
+services:
+  apiGateway:
+    replicas: 1
+    image:
+      tag: dev
+    autoscaling:
+      enabled: false
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
+    
+  authService:
+    replicas: 1
+    image:
+      tag: dev
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
+    
+  userService:
+    replicas: 1
+    image:
+      tag: dev
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
+    
+  tenantService:
+    replicas: 1
+    image:
+      tag: dev
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
+    
+  notificationService:
+    replicas: 1
+    image:
+      tag: dev
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
+    
+  systemConfigService:
+    replicas: 1
+    image:
+      tag: dev
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
+
+ingress:
+  hosts:
+    - host: api.dev.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: api-dev-tls
+      hosts:
+        - api.dev.example.com

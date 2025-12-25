@@ -1,0 +1,14 @@
+apiVersion: v2
+name: infrastructure
+description: Infrastructure components for SaaS Platform (MongoDB, Redis, RabbitMQ)
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - infrastructure
+  - mongodb
+  - redis
+  - rabbitmq
+maintainers:
+  - name: SaaS Framework Team
+    email: team@saas-framework.io

@@ -1,0 +1,104 @@
+## Staging environment overrides
+global:
+  environment: staging
+  domain: staging.example.com
+
+infrastructure:
+  mongodb:
+    replicas: 1
+    persistence:
+      size: 10Gi
+  redis:
+    replicas: 1
+  rabbitmq:
+    replicas: 1
+    persistence:
+      size: 5Gi
+
+services:
+  apiGateway:
+    replicas: 2
+    image:
+      tag: staging
+    autoscaling:
+      enabled: true
+      minReplicas: 2
+      maxReplicas: 5
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+    
+  authService:
+    replicas: 2
+    image:
+      tag: staging
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+    
+  userService:
+    replicas: 2
+    image:
+      tag: staging
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+    
+  tenantService:
+    replicas: 2
+    image:
+      tag: staging
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+    
+  notificationService:
+    replicas: 2
+    image:
+      tag: staging
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+    
+  systemConfigService:
+    replicas: 1
+    image:
+      tag: staging
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+
+ingress:
+  hosts:
+    - host: api.staging.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: api-staging-tls
+      hosts:
+        - api.staging.example.com

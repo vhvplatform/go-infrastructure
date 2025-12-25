@@ -1,0 +1,55 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches: ['release/*']
+    paths:
+      - 'kubernetes/**'
+      - 'helm/**'
+      - 'argocd/**'
+
+jobs:
+  deploy:
+    name: Deploy to Staging Environment
+    runs-on: ubuntu-latest
+    environment: staging
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Kustomize
+        run: |
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          sudo mv kustomize /usr/local/bin/
+      
+      - name: Configure kubectl
+        uses: azure/k8s-set-context@v3
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBECONFIG_STAGING }}
+      
+      - name: Deploy infrastructure
+        run: |
+          cd infrastructure
+          kubectl apply -k kubernetes/overlays/staging
+      
+      - name: Wait for deployments
+        run: |
+          kubectl rollout status deployment -n saas-framework-staging --timeout=10m
+      
+      - name: Verify deployment
+        run: |
+          kubectl get pods -n saas-framework-staging
+          kubectl get svc -n saas-framework-staging
+      
+      - name: Run smoke tests
+        run: |
+          echo "Running smoke tests..."
+          # Add smoke tests here
+      
+      - name: Notify deployment
+        if: always()
+        run: |
+          echo "Deployment to staging completed"
+          echo "Status: ${{ job.status }}"

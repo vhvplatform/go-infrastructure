@@ -1,0 +1,151 @@
+name: Validate Infrastructure
+
+on:
+  pull_request:
+    paths:
+      - 'kubernetes/**'
+      - 'helm/**'
+      - 'terraform/**'
+      - 'argocd/**'
+
+jobs:
+  validate-k8s:
+    name: Validate Kubernetes Manifests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Kustomize
+        run: |
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          sudo mv kustomize /usr/local/bin/
+      
+      - name: Validate dev overlay
+        run: |
+          cd infrastructure
+          kustomize build kubernetes/overlays/dev > /tmp/manifests-dev.yaml
+          echo "✅ Dev overlay is valid"
+      
+      - name: Validate staging overlay
+        run: |
+          cd infrastructure
+          kustomize build kubernetes/overlays/staging > /tmp/manifests-staging.yaml
+          echo "✅ Staging overlay is valid"
+      
+      - name: Validate production overlay
+        run: |
+          cd infrastructure
+          kustomize build kubernetes/overlays/production > /tmp/manifests-prod.yaml
+          echo "✅ Production overlay is valid"
+      
+      - name: Install kubeval
+        run: |
+          curl -sSL https://github.com/instrumenta/kubeval/releases/latest/download/kubeval-linux-amd64.tar.gz | tar xz
+          sudo mv kubeval /usr/local/bin/
+      
+      - name: Validate with kubeval
+        run: |
+          cd infrastructure
+          kubeval --strict /tmp/manifests-dev.yaml
+          kubeval --strict /tmp/manifests-staging.yaml
+          kubeval --strict /tmp/manifests-prod.yaml
+  
+  validate-helm:
+    name: Validate Helm Charts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: 'v3.12.0'
+      
+      - name: Lint umbrella chart
+        run: |
+          cd infrastructure
+          helm lint helm/charts/saas-platform
+      
+      - name: Lint infrastructure chart
+        run: |
+          cd infrastructure
+          helm lint helm/charts/infrastructure
+      
+      - name: Lint microservices chart
+        run: |
+          cd infrastructure
+          helm lint helm/charts/microservices
+      
+      - name: Template dev values
+        run: |
+          cd infrastructure
+          helm template test helm/charts/saas-platform \
+            -f helm/charts/saas-platform/values.dev.yaml \
+            > /tmp/helm-dev.yaml
+      
+      - name: Template staging values
+        run: |
+          cd infrastructure
+          helm template test helm/charts/saas-platform \
+            -f helm/charts/saas-platform/values.staging.yaml \
+            > /tmp/helm-staging.yaml
+      
+      - name: Template prod values
+        run: |
+          cd infrastructure
+          helm template test helm/charts/saas-platform \
+            -f helm/charts/saas-platform/values.prod.yaml \
+            > /tmp/helm-prod.yaml
+  
+  validate-terraform:
+    name: Validate Terraform
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: [dev, staging, production]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.0
+      
+      - name: Terraform Format Check
+        run: |
+          cd infrastructure/terraform/environments/${{ matrix.environment }}
+          terraform fmt -check
+      
+      - name: Terraform Init
+        run: |
+          cd infrastructure/terraform/environments/${{ matrix.environment }}
+          terraform init -backend=false
+      
+      - name: Terraform Validate
+        run: |
+          cd infrastructure/terraform/environments/${{ matrix.environment }}
+          terraform validate
+  
+  validate-argocd:
+    name: Validate ArgoCD Applications
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install yq
+        run: |
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+      
+      - name: Validate ArgoCD manifests
+        run: |
+          cd infrastructure/argocd
+          for file in applications/*/*.yaml app-of-apps.yaml; do
+            echo "Validating $file"
+            yq eval '.' "$file" > /dev/null
+          done
+          echo "✅ All ArgoCD manifests are valid YAML"

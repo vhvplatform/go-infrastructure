@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager-slack
+  namespace: saas-framework
+data:
+  slack.yaml: |
+    global:
+      slack_api_url: 'SLACK_WEBHOOK_URL'
+    
+    route:
+      group_by: ['alertname', 'cluster', 'service']
+      group_wait: 10s
+      group_interval: 10s
+      repeat_interval: 12h
+      receiver: 'slack-notifications'
+      routes:
+      - match:
+          severity: critical
+        receiver: 'slack-critical'
+      - match:
+          severity: warning
+        receiver: 'slack-warnings'
+    
+    receivers:
+    - name: 'slack-notifications'
+      slack_configs:
+      - channel: '#saas-alerts'
+        title: 'SaaS Platform Alert'
+        text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+    
+    - name: 'slack-critical'
+      slack_configs:
+      - channel: '#saas-critical'
+        title: 'CRITICAL: SaaS Platform Alert'
+        text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+        color: 'danger'
+    
+    - name: 'slack-warnings'
+      slack_configs:
+      - channel: '#saas-warnings'
+        title: 'Warning: SaaS Platform Alert'
+        text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+        color: 'warning'

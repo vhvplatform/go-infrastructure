@@ -1,0 +1,140 @@
+groups:
+  - name: saas_framework_alerts
+    interval: 30s
+    rules:
+      # Service availability alerts
+      - alert: ServiceDown
+        expr: up{job=~".*-service"} == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "{{ $labels.job }} has been down for more than 5 minutes."
+
+      # High error rate
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.05
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate on {{ $labels.job }}"
+          description: "{{ $labels.job }} is experiencing error rate > 5% for the last 10 minutes."
+
+      # High latency
+      - alert: HighLatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High latency on {{ $labels.job }}"
+          description: "{{ $labels.job }} P95 latency is above 1 second for the last 10 minutes."
+
+      # High CPU usage
+      - alert: HighCPUUsage
+        expr: rate(container_cpu_usage_seconds_total{pod=~".*-service.*"}[5m]) > 0.8
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on {{ $labels.pod }}"
+          description: "{{ $labels.pod }} is using more than 80% CPU for the last 15 minutes."
+
+      # High memory usage
+      - alert: HighMemoryUsage
+        expr: container_memory_usage_bytes{pod=~".*-service.*"} / container_spec_memory_limit_bytes{pod=~".*-service.*"} > 0.9
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage on {{ $labels.pod }}"
+          description: "{{ $labels.pod }} is using more than 90% of its memory limit for the last 10 minutes."
+
+      # Pod restart
+      - alert: PodRestartingTooOften
+        expr: rate(kube_pod_container_status_restarts_total[15m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Pod {{ $labels.pod }} is restarting frequently"
+          description: "{{ $labels.pod }} has restarted more than 3 times in the last 15 minutes."
+
+      # MongoDB alerts
+      - alert: MongoDBDown
+        expr: up{job="mongodb"} == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "MongoDB is down"
+          description: "MongoDB has been down for more than 5 minutes."
+
+      - alert: MongoDBHighConnections
+        expr: mongodb_connections{state="current"} / mongodb_connections{state="available"} > 0.8
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "MongoDB connection pool is running low"
+          description: "MongoDB is using more than 80% of available connections."
+
+      # Redis alerts
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis is down"
+          description: "Redis has been down for more than 5 minutes."
+
+      - alert: RedisHighMemoryUsage
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis memory usage is high"
+          description: "Redis is using more than 90% of its memory limit."
+
+      # RabbitMQ alerts
+      - alert: RabbitMQDown
+        expr: up{job="rabbitmq"} == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "RabbitMQ is down"
+          description: "RabbitMQ has been down for more than 5 minutes."
+
+      - alert: RabbitMQHighQueueSize
+        expr: rabbitmq_queue_messages > 10000
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "RabbitMQ queue size is high"
+          description: "RabbitMQ queue {{ $labels.queue }} has more than 10,000 messages for the last 15 minutes."
+
+      # Rate limiting alerts
+      - alert: RateLimitHit
+        expr: rate(rate_limit_exceeded_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: info
+        annotations:
+          summary: "Rate limit is being hit frequently"
+          description: "Rate limit has been exceeded more than 10 times per second in the last 5 minutes."
+
+      # Authentication failures
+      - alert: HighAuthFailureRate
+        expr: rate(auth_failures_total[5m]) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High authentication failure rate"
+          description: "Authentication is failing at a rate > 10% for the last 10 minutes. Possible brute force attack."

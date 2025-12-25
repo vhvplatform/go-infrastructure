@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: saas-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "saas-platform.labels" . | nindent 4 }}
+data:
+  ENVIRONMENT: {{ .Values.global.environment | quote }}
+  LOG_LEVEL: {{ if eq .Values.global.environment "development" }}"debug"{{ else }}"info"{{ end }}
+  
+  # Service URLs
+  AUTH_SERVICE_URL: "auth-service:50051"
+  USER_SERVICE_URL: "user-service:50052"
+  TENANT_SERVICE_URL: "tenant-service:50053"
+  NOTIFICATION_SERVICE_URL: "http://notification-service:8084"
+  SYSTEM_CONFIG_SERVICE_URL: "system-config-service:50054"

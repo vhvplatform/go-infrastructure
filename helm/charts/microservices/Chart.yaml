@@ -1,0 +1,13 @@
+apiVersion: v2
+name: microservices
+description: Reusable microservice chart template for SaaS Platform services
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - microservice
+  - template
+  - saas
+maintainers:
+  - name: SaaS Framework Team
+    email: team@saas-framework.io

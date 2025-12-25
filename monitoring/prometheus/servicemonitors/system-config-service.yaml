@@ -1,0 +1,15 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: system-config-service
+  namespace: saas-framework
+  labels:
+    app: system-config-service
+spec:
+  selector:
+    matchLabels:
+      app: system-config-service
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 30s

@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: saas-config
+  namespace: saas-framework
+data:
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "info"
+  
+  # MongoDB
+  MONGODB_URI: "mongodb://mongodb:27017"
+  MONGODB_DATABASE: "saas_framework"
+  MONGODB_MAX_POOL_SIZE: "100"
+  MONGODB_MIN_POOL_SIZE: "10"
+  
+  # Redis
+  REDIS_HOST: "redis"
+  REDIS_PORT: "6379"
+  REDIS_DB: "0"
+  
+  # RabbitMQ
+  RABBITMQ_EXCHANGE: "saas_events"
+  RABBITMQ_QUEUE_PREFIX: "saas"
+  
+  # JWT
+  JWT_EXPIRATION: "3600"
+  JWT_REFRESH_EXPIRATION: "604800"
+  
+  # SMTP
+  SMTP_HOST: "smtp.gmail.com"
+  SMTP_PORT: "587"
+  SMTP_FROM_EMAIL: "noreply@example.com"
+  SMTP_FROM_NAME: "SaaS Framework"
+  
+  # Rate Limiting
+  RATE_LIMIT_REQUESTS_PER_SECOND: "100"
+  RATE_LIMIT_BURST: "200"
+  
+  # CORS
+  CORS_ALLOWED_ORIGINS: "https://yourdomain.com"
+  CORS_ALLOWED_METHODS: "GET,POST,PUT,DELETE,OPTIONS"
+  CORS_ALLOWED_HEADERS: "Content-Type,Authorization,X-Correlation-ID,X-Tenant-ID"
+  
+  # Service URLs
+  AUTH_SERVICE_URL: "auth-service:50051"
+  USER_SERVICE_URL: "user-service:50052"
+  TENANT_SERVICE_URL: "tenant-service:50053"
+  NOTIFICATION_SERVICE_URL: "http://notification-service:8084"
