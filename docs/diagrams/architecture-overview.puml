@@ -1,0 +1,138 @@
+@startuml architecture-overview
+!define ICONURL https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/v2.4.0
+!include ICONURL/common.puml
+!include ICONURL/font-awesome-5/cloud.puml
+!include ICONURL/font-awesome-5/users.puml
+!include ICONURL/font-awesome-5/server.puml
+!include ICONURL/font-awesome-5/database.puml
+
+title Hybrid Multi-tenant SaaS Architecture Overview\nKiến trúc Tổng quan SaaS Đa-thuê bao Lai
+
+skinparam backgroundColor #FEFEFE
+skinparam componentStyle rectangle
+
+' External Actors
+actor "Tenant A\n(subfolder)" as TenantA #LightBlue
+actor "Tenant B\n(custom domain)" as TenantB #LightGreen
+
+' Edge Layer
+package "Edge Layer\nLớp Biên" {
+    [DNS] as DNS
+    [Load Balancer\nCân bằng tải] as LB
+}
+
+' Ingress Layer
+package "Ingress Layer\nLớp Ingress" {
+    component "Nginx Ingress Controller" as Nginx {
+        [Pattern A Handler\nXử lý Mô hình A\n(Subfolder)] as PatternA
+        [Pattern B Handler\nXử lý Mô hình B\n(Custom Domain)] as PatternB
+    }
+    
+    component "Tenant Mapper\nDịch vụ Ánh xạ Tenant" as TenantMapper #Orange {
+        [Domain Resolver\nPhân giải Tên miền] as Resolver
+    }
+}
+
+' Cache Layer
+package "Cache & Session Layer\nLớp Cache & Session" {
+    database "Redis StatefulSet" as Redis #Red {
+        [Domain Mappings\nÁnh xạ Tên miền] as DomainDB
+        [Session Store\nLưu trữ Session] as SessionDB
+    }
+}
+
+' Application Layer
+package "Application Layer\nLớp Ứng dụng" {
+    [API Gateway] as Gateway #Yellow
+    
+    component "Microservices" as Services #LightYellow {
+        [Auth Service\nDịch vụ Xác thực] as AuthSvc
+        [User Service\nDịch vụ Người dùng] as UserSvc
+        [Tenant Service\nDịch vụ Tenant] as TenantSvc
+        [Other Services\nCác dịch vụ khác] as OtherSvc
+    }
+}
+
+' Data Layer
+package "Data Layer\nLớp Dữ liệu" {
+    database "MongoDB Atlas" as MongoDB #Green
+    database "RabbitMQ" as RabbitMQ #Purple
+}
+
+' Monitoring
+package "Monitoring\nGiám sát" {
+    [Prometheus] as Prom
+    [Grafana] as Graf
+    [Loki] as Loki
+}
+
+' Connections - Pattern A
+TenantA --> DNS : saas.com/tenant-123/api/*
+DNS --> LB
+LB --> PatternA : Extract tenant_id\nTrích xuất tenant_id
+PatternA --> Gateway : X-Tenant-ID: tenant-123
+
+' Connections - Pattern B
+TenantB --> DNS : customer.com/api/*
+DNS --> LB
+LB --> PatternB : Custom Domain\nTên miền tùy chỉnh
+PatternB ..> TenantMapper : auth-url call\nGọi auth-url
+TenantMapper --> DomainDB : Query domain mapping\nTruy vấn ánh xạ
+DomainDB --> TenantMapper : Return tenant_id\nTrả về tenant_id
+TenantMapper ..> PatternB : X-Tenant-ID: tenant-456
+PatternB --> Gateway : X-Tenant-ID: tenant-456
+
+' Gateway to Services
+Gateway --> AuthSvc
+Gateway --> UserSvc
+Gateway --> TenantSvc
+Gateway --> OtherSvc
+
+' Services to Data
+AuthSvc --> Redis : Session management\nQuản lý Session
+UserSvc --> MongoDB : User data\nDữ liệu người dùng
+TenantSvc --> MongoDB : Tenant data\nDữ liệu Tenant
+OtherSvc --> RabbitMQ : Message queue\nHàng đợi tin nhắn
+
+' Monitoring connections
+Services ..> Prom : Metrics\nChỉ số
+Prom --> Graf : Visualize\nHiển thị
+Services ..> Loki : Logs\nNhật ký
+
+note right of PatternA
+  Pattern A: Subfolder Routing
+  Mô hình A: Định tuyến Thư mục con
+  
+  Request: saas.com/{tenant_id}/api/*
+  • Extract tenant_id from URI
+    Trích xuất tenant_id từ URI
+  • Inject X-Tenant-ID header
+    Chèn header X-Tenant-ID
+  • Remove /{tenant_id} from path
+    Xóa /{tenant_id} khỏi đường dẫn
+end note
+
+note right of PatternB
+  Pattern B: Custom Domain Routing
+  Mô hình B: Định tuyến Tên miền Tùy chỉnh
+  
+  Request: customer.com/api/*
+  • Call tenant-mapper via auth-url
+    Gọi tenant-mapper qua auth-url
+  • Resolve domain → tenant_id
+    Phân giải tên miền → tenant_id
+  • Inject X-Tenant-ID header
+    Chèn header X-Tenant-ID
+end note
+
+note bottom of Redis
+  Stores:
+  • Domain → Tenant mappings
+    Ánh xạ Tên miền → Tenant
+  • User sessions with Path=/
+    Session người dùng với Path=/
+  • Cache data
+    Dữ liệu cache
+end note
+
+@enduml

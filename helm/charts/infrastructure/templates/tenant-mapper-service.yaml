@@ -1,0 +1,21 @@
+{{- if .Values.tenantMapper.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: tenant-mapper
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: tenant-mapper
+    component: infrastructure
+    {{- include "infrastructure.labels" . | nindent 4 }}
+spec:
+  selector:
+    app: tenant-mapper
+    component: infrastructure
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+    name: http
+  type: ClusterIP
+{{- end }}

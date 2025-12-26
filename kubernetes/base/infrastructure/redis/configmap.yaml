@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-config
+  namespace: saas-framework
+  labels:
+    app: redis
+    component: infrastructure
+data:
+  redis.conf: |
+    # Redis Configuration for Multi-tenant SaaS
+    # Persistence
+    save 900 1
+    save 300 10
+    save 60 10000
+    
+    # Memory management
+    maxmemory 512mb
+    maxmemory-policy allkeys-lru
+    
+    # Network
+    timeout 0
+    tcp-keepalive 300
+    
+    # Logging
+    loglevel notice
+    
+    # Append-only file for persistence
+    appendonly yes
+    appendfsync everysec
+    
+    # Cluster/Replication (disabled for single instance)
+    # Enable if using Redis Sentinel or Cluster
+    
+    # Security - password set via command line args

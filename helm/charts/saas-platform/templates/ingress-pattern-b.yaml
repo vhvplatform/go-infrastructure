@@ -1,0 +1,72 @@
+{{- if .Values.ingress.patternB.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.ingress.patternB.name | default "saas-multi-tenant-custom-domain" }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    # Pattern B: Custom domain routing with tenant resolution via auth service
+    # Example: customer.com/api/{service_name}/*
+    
+    # Use tenant-mapper service to resolve domain to tenant ID
+    nginx.ingress.kubernetes.io/auth-url: {{ .Values.ingress.patternB.authUrl | default (printf "http://tenant-mapper.%s.svc.cluster.local" .Release.Namespace) | quote }}
+    nginx.ingress.kubernetes.io/auth-method: "GET"
+    
+    # Copy X-Tenant-ID header from auth response to proxied request
+    nginx.ingress.kubernetes.io/auth-response-headers: "X-Tenant-ID"
+    
+    # Pass original host to tenant-mapper for domain resolution
+    nginx.ingress.kubernetes.io/auth-snippet: |
+      proxy_set_header X-Original-Host $host;
+      proxy_set_header X-Forwarded-Host $host;
+    
+    # Use regex for dynamic service routing
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    
+    # SSL configuration
+    nginx.ingress.kubernetes.io/ssl-redirect: "{{ .Values.ingress.patternB.sslRedirect | default "true" }}"
+    {{- if .Values.ingress.patternB.certIssuer }}
+    cert-manager.io/cluster-issuer: {{ .Values.ingress.patternB.certIssuer | quote }}
+    {{- end }}
+    
+    # Rate limiting
+    {{- if .Values.ingress.patternB.rateLimit }}
+    nginx.ingress.kubernetes.io/rate-limit: "{{ .Values.ingress.patternB.rateLimit }}"
+    {{- end }}
+    
+    # Session cookie configuration (Path=/)
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/session-cookie-path: "/"
+    nginx.ingress.kubernetes.io/session-cookie-name: "{{ .Values.ingress.patternB.sessionCookieName | default "saas-session" }}"
+    
+    {{- with .Values.ingress.patternB.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  labels:
+    app: saas-framework
+    routing-pattern: custom-domain
+    {{- include "saas-platform.labels" . | nindent 4 }}
+spec:
+  ingressClassName: {{ .Values.ingress.className | default "nginx" }}
+  {{- if .Values.ingress.patternB.tls.enabled }}
+  tls:
+  - hosts:
+    {{- range .Values.ingress.patternB.hosts }}
+    - {{ . }}
+    {{- end }}
+    secretName: {{ .Values.ingress.patternB.tls.secretName }}
+  {{- end }}
+  rules:
+  {{- range .Values.ingress.patternB.hosts }}
+  - host: {{ . }}
+    http:
+      paths:
+      - path: /api/(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: {{ $.Values.ingress.patternB.backendService | default "api-gateway" }}
+            port:
+              number: {{ $.Values.ingress.patternB.backendPort | default 8080 }}
+  {{- end }}
+{{- end }}

@@ -1,0 +1,59 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: saas-multi-tenant-custom-domain
+  namespace: saas-framework
+  annotations:
+    # Pattern B: Custom domain routing with tenant resolution via auth service
+    # Example: customer.com/api/{service_name}/*
+    
+    # Use tenant-mapper service to resolve domain to tenant ID
+    nginx.ingress.kubernetes.io/auth-url: "http://tenant-mapper.saas-framework.svc.cluster.local"
+    nginx.ingress.kubernetes.io/auth-method: "GET"
+    
+    # Copy X-Tenant-ID header from auth response to proxied request
+    nginx.ingress.kubernetes.io/auth-response-headers: "X-Tenant-ID"
+    
+    # Pass original host to tenant-mapper for domain resolution
+    nginx.ingress.kubernetes.io/auth-snippet: |
+      proxy_set_header X-Original-Host $host;
+      proxy_set_header X-Forwarded-Host $host;
+    
+    # Use regex for dynamic service routing
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    
+    # SSL configuration
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    
+    # Rate limiting
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    
+    # Session cookie configuration (Path=/)
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/session-cookie-path: "/"
+    nginx.ingress.kubernetes.io/session-cookie-name: "saas-session"
+    
+  labels:
+    app: saas-framework
+    routing-pattern: custom-domain
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - "*.yourdomain.com"
+    secretName: saas-wildcard-tls
+  rules:
+  # Wildcard rule for all custom domains
+  - host: "*.yourdomain.com"
+    http:
+      paths:
+      # Dynamic service routing with regex
+      # Pattern: /api/{service_name}/*
+      - path: /api/(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: api-gateway
+            port:
+              number: 8080

@@ -15,11 +15,20 @@ infrastructure:
   redis:
     enabled: true
     replicas: 1
+    persistence:
+      enabled: true
+      size: 10Gi
   rabbitmq:
     enabled: true
     replicas: 1
     persistence:
       size: 5Gi
+  tenantMapper:
+    enabled: true
+    replicas: 2
+    image:
+      repository: gcr.io/your-project/tenant-mapper
+      tag: latest
 
 ## Services configuration
 services:
@@ -146,6 +155,44 @@ services:
 ingress:
   enabled: true
   className: nginx
+  
+  # Pattern A: Subfolder-based routing
+  # Example: saas.com/{tenant_id}/api/{service_name}/*
+  patternA:
+    enabled: true
+    name: saas-multi-tenant-subfolder
+    hosts:
+      - saas.yourdomain.com
+    backendService: api-gateway
+    backendPort: 8080
+    sslRedirect: "true"
+    certIssuer: letsencrypt-prod
+    rateLimit: "100"
+    tls:
+      enabled: true
+      secretName: saas-framework-tls
+    annotations: {}
+  
+  # Pattern B: Custom domain routing with tenant resolution
+  # Example: customer.com/api/{service_name}/*
+  patternB:
+    enabled: true
+    name: saas-multi-tenant-custom-domain
+    hosts:
+      - "*.yourdomain.com"
+    backendService: api-gateway
+    backendPort: 8080
+    authUrl: ""  # Auto-generated if empty
+    sslRedirect: "true"
+    certIssuer: letsencrypt-prod
+    rateLimit: "100"
+    sessionCookieName: saas-session
+    tls:
+      enabled: true
+      secretName: saas-wildcard-tls
+    annotations: {}
+  
+  # Legacy/backward compatibility
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
   hosts:

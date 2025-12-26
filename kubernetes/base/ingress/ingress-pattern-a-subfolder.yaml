@@ -1,0 +1,59 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: saas-multi-tenant-subfolder
+  namespace: saas-framework
+  annotations:
+    # Pattern A: Subfolder-based routing with tenant extraction
+    # Example: saas.com/{tenant_id}/api/{service_name}/*
+    
+    # Extract tenant_id from URI and inject as header
+    nginx.ingress.kubernetes.io/server-snippet: |
+      set $tenant_id '';
+      if ($request_uri ~* "^/([^/]+)/api/(.*)$") {
+        set $tenant_id $1;
+      }
+    
+    # Add X-Tenant-ID header with extracted tenant_id
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_set_header X-Tenant-ID $tenant_id;
+    
+    # Rewrite URI to remove /{tenant_id} prefix before routing to backend
+    # This regex captures: /tenant_id/api/service_name/path -> /api/service_name/path
+    nginx.ingress.kubernetes.io/rewrite-target: /api/$2
+    
+    # Use regex for path matching
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    
+    # SSL configuration
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    
+    # Rate limiting
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    
+  labels:
+    app: saas-framework
+    routing-pattern: subfolder
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - saas.yourdomain.com
+    secretName: saas-framework-tls
+  rules:
+  - host: saas.yourdomain.com
+    http:
+      paths:
+      # Dynamic service routing with regex
+      # Pattern: /{tenant_id}/api/{service_name}/*
+      # This will match any service dynamically
+      - path: /([^/]+)/api/(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            # Note: This requires additional configuration or service mesh
+            # For now, routing to api-gateway which can handle internal routing
+            name: api-gateway
+            port:
+              number: 8080
