@@ -2,7 +2,7 @@
 global:
   environment: production
   domain: example.com
-  registry: ghcr.io/vhvcorp
+  registry: ghcr.io/vhvplatform
 
 ## Infrastructure components
 infrastructure:
@@ -28,7 +28,7 @@ services:
     name: api-gateway
     replicas: 3
     image:
-      repository: ghcr.io/vhvcorp/go-api-gateway
+      repository: ghcr.io/vhvplatform/go-api-gateway
       tag: v1.0.0
       pullPolicy: IfNotPresent
     service:
@@ -52,7 +52,7 @@ services:
     name: auth-service
     replicas: 3
     image:
-      repository: ghcr.io/vhvcorp/go-auth-service
+      repository: ghcr.io/vhvplatform/go-auth-service
       tag: v1.0.0
       pullPolicy: IfNotPresent
     service:
@@ -71,7 +71,7 @@ services:
     name: user-service
     replicas: 3
     image:
-      repository: ghcr.io/vhvcorp/go-user-service
+      repository: ghcr.io/vhvplatform/go-user-service
       tag: v1.0.0
       pullPolicy: IfNotPresent
     service:
@@ -90,7 +90,7 @@ services:
     name: tenant-service
     replicas: 3
     image:
-      repository: ghcr.io/vhvcorp/go-tenant-service
+      repository: ghcr.io/vhvplatform/go-tenant-service
       tag: v1.0.0
       pullPolicy: IfNotPresent
     service:
@@ -109,7 +109,7 @@ services:
     name: notification-service
     replicas: 3
     image:
-      repository: ghcr.io/vhvcorp/go-notification-service
+      repository: ghcr.io/vhvplatform/go-notification-service
       tag: v1.0.0
       pullPolicy: IfNotPresent
     service:
@@ -128,7 +128,7 @@ services:
     name: system-config-service
     replicas: 2
     image:
-      repository: ghcr.io/vhvcorp/go-system-config-service
+      repository: ghcr.io/vhvplatform/go-system-config-service
       tag: v1.0.0
       pullPolicy: IfNotPresent
     service:

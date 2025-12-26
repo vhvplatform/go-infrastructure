@@ -214,6 +214,6 @@ See [LICENSE](LICENSE) file for details.
 
 ## 🔗 Related Repositories
 
-- [go-framework](https://github.com/vhvcorp/go-framework) - Main monorepo
-- [go-shared](https://github.com/vhvcorp/go-shared) - Shared libraries
+- [go-framework](https://github.com/vhvplatform/go-framework) - Main monorepo
+- [go-shared](https://github.com/vhvplatform/go-shared) - Shared libraries
 - Individual service repositories (after extraction)

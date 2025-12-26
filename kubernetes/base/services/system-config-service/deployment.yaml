@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
       - name: system-config-service
-        image: ghcr.io/vhvcorp/go-system-config-service:latest
+        image: ghcr.io/vhvplatform/go-system-config-service:latest
         imagePullPolicy: Always
         ports:
         - name: grpc

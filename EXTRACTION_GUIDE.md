@@ -24,7 +24,7 @@ This guide helps you extract the `infrastructure/` directory from the monorepo i
 
 ### Option B: Via GitHub CLI
 ```bash
-gh repo create vhvcorp/go-infrastructure \
+gh repo create vhvplatform/go-infrastructure \
   --private \
   --description "Infrastructure as Code for SaaS Platform"
 ```
@@ -33,7 +33,7 @@ gh repo create vhvcorp/go-infrastructure \
 
 ```bash
 # Clone the monorepo to a new directory
-git clone https://github.com/vhvcorp/go-framework.git go-infrastructure
+git clone https://github.com/vhvplatform/go-framework.git go-infrastructure
 cd go-infrastructure
 
 # Filter to only infrastructure directory and move to root
@@ -48,7 +48,7 @@ ls -la
 
 ```bash
 # Add new remote
-git remote add origin https://github.com/vhvcorp/go-infrastructure.git
+git remote add origin https://github.com/vhvplatform/go-infrastructure.git
 
 # Push to new repository
 git push -u origin main
@@ -70,7 +70,7 @@ find kubernetes/ -name "*.yaml" -type f
 
 # Update image references (example)
 # FROM: image: services/auth-service
-# TO: image: ghcr.io/vhvcorp/go-auth-service:latest
+# TO: image: ghcr.io/vhvplatform/go-auth-service:latest
 ```
 
 ### Update ArgoCD Source Repository
@@ -81,7 +81,7 @@ Edit `argocd/applications/*//*.yaml`:
 # Change repoURL from monorepo to infrastructure repo
 spec:
   source:
-    repoURL: https://github.com/vhvcorp/go-infrastructure  # Updated
+    repoURL: https://github.com/vhvplatform/go-infrastructure  # Updated
     targetRevision: main
 ```
 
@@ -120,7 +120,7 @@ gh secret set TF_VAR_mongodb_atlas_private_key -b "your-private-key"
 
 ```bash
 # Via GitHub CLI
-gh api repos/vhvcorp/go-infrastructure/branches/main/protection \
+gh api repos/vhvplatform/go-infrastructure/branches/main/protection \
   --method PUT \
   --field required_status_checks='{"strict":true,"contexts":["validate-k8s","validate-helm"]}' \
   --field enforce_admins=true \
@@ -154,7 +154,7 @@ ARGOCD_PASSWORD=$(kubectl -n argocd get secret argocd-initial-admin-secret \
 argocd login localhost:8080 --username admin --password $ARGOCD_PASSWORD
 
 # Add repository
-argocd repo add https://github.com/vhvcorp/go-infrastructure \
+argocd repo add https://github.com/vhvplatform/go-infrastructure \
   --username <github-username> \
   --password <github-token>
 
@@ -173,7 +173,7 @@ In the original monorepo:
 # Infrastructure
 
 Infrastructure configurations have been moved to:
-https://github.com/vhvcorp/go-infrastructure
+https://github.com/vhvplatform/go-infrastructure
 
 This directory is kept for reference during migration.
 ```
@@ -193,7 +193,7 @@ kubectl get pods -n saas-framework-staging
 kubectl get pods -n saas-framework-prod
 
 # Check GitHub Actions
-gh run list --repo vhvcorp/go-infrastructure
+gh run list --repo vhvplatform/go-infrastructure
 ```
 
 ## Post-Migration Checklist

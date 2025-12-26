@@ -3,7 +3,7 @@ name: service
 replicas: 1
 
 image:
-  repository: ghcr.io/vhvcorp/go-service
+  repository: ghcr.io/vhvplatform/go-service
   tag: latest
   pullPolicy: IfNotPresent
 

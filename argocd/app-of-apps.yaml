@@ -7,7 +7,7 @@ spec:
   project: saas-platform
   
   source:
-    repoURL: https://github.com/vhvcorp/go-infrastructure
+    repoURL: https://github.com/vhvplatform/go-infrastructure
     targetRevision: main
     path: argocd/applications
   

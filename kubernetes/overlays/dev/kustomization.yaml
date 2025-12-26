@@ -31,20 +31,20 @@ configMapGenerator:
 
 images:
   - name: api-gateway
-    newName: ghcr.io/vhvcorp/go-api-gateway
+    newName: ghcr.io/vhvplatform/go-api-gateway
     newTag: dev
   - name: auth-service
-    newName: ghcr.io/vhvcorp/go-auth-service
+    newName: ghcr.io/vhvplatform/go-auth-service
     newTag: dev
   - name: user-service
-    newName: ghcr.io/vhvcorp/go-user-service
+    newName: ghcr.io/vhvplatform/go-user-service
     newTag: dev
   - name: tenant-service
-    newName: ghcr.io/vhvcorp/go-tenant-service
+    newName: ghcr.io/vhvplatform/go-tenant-service
     newTag: dev
   - name: notification-service
-    newName: ghcr.io/vhvcorp/go-notification-service
+    newName: ghcr.io/vhvplatform/go-notification-service
     newTag: dev
   - name: system-config-service
-    newName: ghcr.io/vhvcorp/go-system-config-service
+    newName: ghcr.io/vhvplatform/go-system-config-service
     newTag: dev

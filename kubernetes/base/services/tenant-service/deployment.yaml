@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
       - name: tenant-service
-        image: ghcr.io/vhvcorp/go-tenant-service:latest
+        image: ghcr.io/vhvplatform/go-tenant-service:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 50053

@@ -58,7 +58,7 @@ cd go-infrastructure
 
 3. **Add upstream remote**:
 ```bash
-git remote add upstream https://github.com/vhvcorp/go-infrastructure.git
+git remote add upstream https://github.com/vhvplatform/go-infrastructure.git
 ```
 
 4. **Keep your fork in sync**:
