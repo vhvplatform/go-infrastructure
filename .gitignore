@@ -72,7 +72,15 @@ Thumbs.db
 .env
 .env.local
 .env.*.local
+.env.*.backup
 
 # Kubernetes config
 kubeconfig
 *.kubeconfig
+
+# Go build artifacts
+services/*/go.sum
+services/*/*.exe
+services/*/tenant-mapper
+services/*/debug
+vendor/

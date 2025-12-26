@@ -24,20 +24,20 @@ metadata:
     nginx.ingress.kubernetes.io/use-regex: "true"
     
     # SSL configuration
-    nginx.ingress.kubernetes.io/ssl-redirect: "{{ .Values.ingress.patternB.sslRedirect | default "true" }}"
+    nginx.ingress.kubernetes.io/ssl-redirect: {{ .Values.ingress.patternB.sslRedirect | default "true" | quote }}
     {{- if .Values.ingress.patternB.certIssuer }}
     cert-manager.io/cluster-issuer: {{ .Values.ingress.patternB.certIssuer | quote }}
     {{- end }}
     
     # Rate limiting
     {{- if .Values.ingress.patternB.rateLimit }}
-    nginx.ingress.kubernetes.io/rate-limit: "{{ .Values.ingress.patternB.rateLimit }}"
+    nginx.ingress.kubernetes.io/rate-limit: {{ .Values.ingress.patternB.rateLimit | quote }}
     {{- end }}
     
     # Session cookie configuration (Path=/)
     nginx.ingress.kubernetes.io/affinity: "cookie"
     nginx.ingress.kubernetes.io/session-cookie-path: "/"
-    nginx.ingress.kubernetes.io/session-cookie-name: "{{ .Values.ingress.patternB.sessionCookieName | default "saas-session" }}"
+    nginx.ingress.kubernetes.io/session-cookie-name: {{ .Values.ingress.patternB.sessionCookieName | default "saas-session" | quote }}
     
     {{- with .Values.ingress.patternB.annotations }}
     {{- toYaml . | nindent 4 }}
@@ -47,15 +47,15 @@ metadata:
     routing-pattern: custom-domain
     {{- include "saas-platform.labels" . | nindent 4 }}
 spec:
-  ingressClassName: {{ .Values.ingress.className | default "nginx" }}
-  {{- if .Values.ingress.patternB.tls.enabled }}
+  ingressClassName: {{ .Values.ingress.className | default "nginx" | quote }}
+{{- if .Values.ingress.patternB.tls.enabled }}
   tls:
   - hosts:
     {{- range .Values.ingress.patternB.hosts }}
     - {{ . }}
     {{- end }}
     secretName: {{ .Values.ingress.patternB.tls.secretName }}
-  {{- end }}
+{{- end }}
   rules:
   {{- range .Values.ingress.patternB.hosts }}
   - host: {{ . }}

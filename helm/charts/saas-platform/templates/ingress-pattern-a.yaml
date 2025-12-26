@@ -26,14 +26,14 @@ metadata:
     nginx.ingress.kubernetes.io/use-regex: "true"
     
     # SSL configuration
-    nginx.ingress.kubernetes.io/ssl-redirect: "{{ .Values.ingress.patternA.sslRedirect | default "true" }}"
+    nginx.ingress.kubernetes.io/ssl-redirect: {{ .Values.ingress.patternA.sslRedirect | default "true" | quote }}
     {{- if .Values.ingress.patternA.certIssuer }}
     cert-manager.io/cluster-issuer: {{ .Values.ingress.patternA.certIssuer | quote }}
     {{- end }}
     
     # Rate limiting
     {{- if .Values.ingress.patternA.rateLimit }}
-    nginx.ingress.kubernetes.io/rate-limit: "{{ .Values.ingress.patternA.rateLimit }}"
+    nginx.ingress.kubernetes.io/rate-limit: {{ .Values.ingress.patternA.rateLimit | quote }}
     {{- end }}
     
     {{- with .Values.ingress.patternA.annotations }}
@@ -44,15 +44,15 @@ metadata:
     routing-pattern: subfolder
     {{- include "saas-platform.labels" . | nindent 4 }}
 spec:
-  ingressClassName: {{ .Values.ingress.className | default "nginx" }}
-  {{- if .Values.ingress.patternA.tls.enabled }}
+  ingressClassName: {{ .Values.ingress.className | default "nginx" | quote }}
+{{- if .Values.ingress.patternA.tls.enabled }}
   tls:
   - hosts:
     {{- range .Values.ingress.patternA.hosts }}
     - {{ . }}
     {{- end }}
     secretName: {{ .Values.ingress.patternA.tls.secretName }}
-  {{- end }}
+{{- end }}
   rules:
   {{- range .Values.ingress.patternA.hosts }}
   - host: {{ . }}
