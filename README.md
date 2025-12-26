@@ -65,9 +65,15 @@ See [detailed deployment guide](docs/HYBRID_MULTITENANT_DEPLOYMENT.md) for more 
 ```
 infrastructure/
 ├── services/            # Go microservices
-│   └── tenant-mapper/   # Domain to tenant ID resolution service
+│   ├── tenant-mapper/   # Domain to tenant ID resolution service
+│   └── middleware/      # Go tenancy middleware (Gin/Echo)
 ├── kubernetes/          # Kubernetes manifests with Kustomize
 │   ├── base/           # Base manifests
+│   │   ├── namespaces/      # Namespace strategy (core, shared, workloads, sandbox)
+│   │   ├── network-policies/ # Zero-trust network policies
+│   │   ├── ingress/         # Pattern A & B ingress configs
+│   │   ├── infrastructure/  # Redis StatefulSet, etc.
+│   │   └── services/        # Service deployments
 │   └── overlays/       # Environment-specific overlays (dev/staging/prod)
 ├── helm/               # Helm charts for deployment
 │   └── charts/
@@ -92,6 +98,8 @@ infrastructure/
 └── docs/              # Documentation
     ├── HYBRID_MULTITENANT_DEPLOYMENT.md     # English guide
     ├── HYBRID_MULTITENANT_DEPLOYMENT_VI.md  # Vietnamese guide
+    ├── MULTITENANT_EXAMPLES.md              # Examples & use cases
+    ├── TRAFFIC_FLOW_ARCHITECTURE.md         # Complete traffic flow
     └── diagrams/      # PlantUML architecture diagrams
 ```
 
@@ -263,6 +271,13 @@ kubectl port-forward -n saas-framework svc/prometheus 9090:9090
 - [GitOps Workflow](docs/GITOPS.md) - GitOps best practices
 - [Troubleshooting](docs/TROUBLESHOOTING.md) - Common issues and solutions
 - [Extraction Guide](EXTRACTION_GUIDE.md) - How to extract to separate repo
+- **[Traffic Flow Architecture](docs/TRAFFIC_FLOW_ARCHITECTURE.md)** - Complete scalable architecture guide
+
+### Kubernetes Resources
+
+- [Namespace Strategy](kubernetes/base/namespaces/namespaces.yaml) - 4-tier namespace architecture
+- [Network Policies](kubernetes/base/network-policies/network-policy-sandbox.yaml) - Zero-trust security
+- [Go Middleware](services/middleware/README.md) - Tenancy middleware for Gin/Echo
 
 ### Environment-specific Docs
 
