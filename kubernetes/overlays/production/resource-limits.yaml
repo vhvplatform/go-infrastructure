@@ -3,7 +3,13 @@ kind: Deployment
 metadata:
   name: api-gateway
 spec:
+  selector:
+    matchLabels:
+      app: api-gateway
   template:
+    metadata:
+      labels:
+        app: api-gateway
     spec:
       containers:
         - name: api-gateway
@@ -20,7 +26,13 @@ kind: Deployment
 metadata:
   name: auth-service
 spec:
+  selector:
+    matchLabels:
+      app: auth-service
   template:
+    metadata:
+      labels:
+        app: auth-service
     spec:
       containers:
         - name: auth-service
@@ -37,7 +49,13 @@ kind: Deployment
 metadata:
   name: user-service
 spec:
+  selector:
+    matchLabels:
+      app: user-service
   template:
+    metadata:
+      labels:
+        app: user-service
     spec:
       containers:
         - name: user-service
@@ -54,7 +72,13 @@ kind: Deployment
 metadata:
   name: tenant-service
 spec:
+  selector:
+    matchLabels:
+      app: tenant-service
   template:
+    metadata:
+      labels:
+        app: tenant-service
     spec:
       containers:
         - name: tenant-service
@@ -71,7 +95,13 @@ kind: Deployment
 metadata:
   name: notification-service
 spec:
+  selector:
+    matchLabels:
+      app: notification-service
   template:
+    metadata:
+      labels:
+        app: notification-service
     spec:
       containers:
         - name: notification-service
@@ -88,7 +118,13 @@ kind: Deployment
 metadata:
   name: system-config-service
 spec:
+  selector:
+    matchLabels:
+      app: system-config-service
   template:
+    metadata:
+      labels:
+        app: system-config-service
     spec:
       containers:
         - name: system-config-service
