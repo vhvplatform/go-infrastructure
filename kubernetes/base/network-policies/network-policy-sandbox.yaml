@@ -1,0 +1,163 @@
+# Network Policies for 3rd Party Sandbox
+# Implements Zero-Trust security model with default deny-all and explicit allow rules
+
+---
+# Default Deny-All Policy for 3rd Party Sandbox
+# Blocks all ingress and egress traffic by default
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: 3rd-party-sandbox
+  annotations:
+    description: "Default deny-all policy - all traffic must be explicitly allowed"
+spec:
+  podSelector: {}  # Apply to all pods in namespace
+  policyTypes:
+  - Ingress
+  - Egress
+
+---
+# Allow 3rd Party Sandbox to Public API Gateway Only
+# Restricts sandbox to communicate only with the public API gateway
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-to-public-api-gateway
+  namespace: 3rd-party-sandbox
+  annotations:
+    description: "Allow 3rd party services to access ONLY the public API gateway"
+spec:
+  podSelector: {}  # Apply to all pods in namespace
+  policyTypes:
+  - Egress
+  egress:
+  # Allow access to public API gateway in shared-services namespace
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: shared-services
+      podSelector:
+        matchLabels:
+          app: api-gateway
+          tier: public
+    ports:
+    - protocol: TCP
+      port: 8080
+    - protocol: TCP
+      port: 443
+  
+  # Allow DNS resolution
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+  
+  # Allow external HTTPS for 3rd party API calls (controlled by egress rules)
+  - to:
+    - podSelector: {}
+    ports:
+    - protocol: TCP
+      port: 443
+
+---
+# Block Access to Internal Databases and Core Services
+# Explicit deny policy for sensitive internal services
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: block-internal-services
+  namespace: 3rd-party-sandbox
+  annotations:
+    description: "Explicitly block access to databases and core internal services"
+spec:
+  podSelector: {}  # Apply to all pods
+  policyTypes:
+  - Egress
+  egress: []
+  # This policy intentionally has no egress rules, meaning nothing is allowed
+  # The allow-to-public-api-gateway policy above will provide the only allowed egress
+
+---
+# Allow Ingress from Public API Gateway to Sandbox
+# Allows the API gateway to call into sandbox services when needed
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-from-api-gateway
+  namespace: 3rd-party-sandbox
+  annotations:
+    description: "Allow public API gateway to call 3rd party sandbox services"
+spec:
+  podSelector:
+    matchLabels:
+      accepts-external-calls: "true"  # Only pods with this label can receive traffic
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: shared-services
+      podSelector:
+        matchLabels:
+          app: api-gateway
+          tier: public
+    ports:
+    - protocol: TCP
+      port: 8080
+    - protocol: TCP
+      port: 9090
+
+---
+# Block Cross-Pod Communication within Sandbox
+# Prevents lateral movement between 3rd party services
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: block-pod-to-pod
+  namespace: 3rd-party-sandbox
+  annotations:
+    description: "Prevent lateral movement - 3rd party pods cannot talk to each other"
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  ingress: []
+  # No ingress rules = no pod in this namespace can receive traffic from other pods in same namespace
+
+---
+# Example: Monitoring Exceptions (Optional)
+# Allows Prometheus in core-system to scrape metrics
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-monitoring-scrape
+  namespace: 3rd-party-sandbox
+  annotations:
+    description: "Allow Prometheus to scrape metrics from sandbox pods"
+spec:
+  podSelector:
+    matchLabels:
+      monitoring: "enabled"
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: core-system
+      podSelector:
+        matchLabels:
+          app: prometheus
+    ports:
+    - protocol: TCP
+      port: 9090  # Metrics port

@@ -1,0 +1,22 @@
+{{- if .Values.redis.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: redis
+    component: infrastructure
+    {{- include "infrastructure.labels" . | nindent 4 }}
+spec:
+  selector:
+    app: redis
+    component: infrastructure
+  ports:
+  - protocol: TCP
+    port: {{ .Values.redis.service.port }}
+    targetPort: {{ .Values.redis.service.port }}
+    name: redis
+  clusterIP: None
+  type: {{ .Values.redis.service.type }}
+{{- end }}

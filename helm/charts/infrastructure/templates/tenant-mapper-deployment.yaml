@@ -1,0 +1,58 @@
+{{- if .Values.tenantMapper.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tenant-mapper
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: tenant-mapper
+    component: infrastructure
+    {{- include "infrastructure.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.tenantMapper.replicas | default 2 }}
+  selector:
+    matchLabels:
+      app: tenant-mapper
+      component: infrastructure
+  template:
+    metadata:
+      labels:
+        app: tenant-mapper
+        component: infrastructure
+        {{- include "infrastructure.labels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: tenant-mapper
+        image: "{{ .Values.tenantMapper.image.repository }}:{{ .Values.tenantMapper.image.tag }}"
+        imagePullPolicy: {{ .Values.tenantMapper.image.pullPolicy }}
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+        env:
+        - name: REDIS_ADDR
+          value: "{{ .Values.tenantMapper.redisAddr | default "redis:6379" }}"
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.tenantMapper.secretName | default "saas-secrets" }}
+              key: redis-password
+        resources:
+          {{- toYaml .Values.tenantMapper.resources | nindent 10 }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
+{{- end }}

@@ -1,11 +1,13 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: redis
   namespace: saas-framework
   labels:
     app: redis
+    component: infrastructure
 spec:
+  serviceName: redis
   replicas: 1
   selector:
     matchLabels:
@@ -14,6 +16,7 @@ spec:
     metadata:
       labels:
         app: redis
+        component: infrastructure
     spec:
       containers:
       - name: redis
@@ -21,38 +24,65 @@ spec:
         ports:
         - containerPort: 6379
           name: redis
+          protocol: TCP
         command:
         - redis-server
+        - /etc/redis/redis.conf
         - --requirepass
         - $(REDIS_PASSWORD)
-        - --maxmemory
-        - 256mb
-        - --maxmemory-policy
-        - allkeys-lru
         env:
         - name: REDIS_PASSWORD
           valueFrom:
             secretKeyRef:
               name: saas-secrets
               key: redis-password
+        volumeMounts:
+        - name: redis-data
+          mountPath: /data
+        - name: redis-config
+          mountPath: /etc/redis
         resources:
           requests:
-            memory: "128Mi"
-            cpu: "100m"
-          limits:
             memory: "256Mi"
-            cpu: "200m"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
         livenessProbe:
           exec:
             command:
             - redis-cli
+            - --no-auth-warning
+            - -a
+            - $(REDIS_PASSWORD)
             - ping
           initialDelaySeconds: 30
           periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
         readinessProbe:
           exec:
             command:
             - redis-cli
+            - --no-auth-warning
+            - -a
+            - $(REDIS_PASSWORD)
             - ping
           initialDelaySeconds: 5
           periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
+      volumes:
+      - name: redis-config
+        configMap:
+          name: redis-config
+  volumeClaimTemplates:
+  - metadata:
+      name: redis-data
+      labels:
+        app: redis
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 10Gi

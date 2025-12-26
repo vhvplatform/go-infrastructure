@@ -1,0 +1,150 @@
+@startuml traffic-flow-pattern-b
+!theme plain
+title Traffic Flow - Pattern B (Custom Domain Routing)\nLuồng Lưu lượng - Mô hình B (Định tuyến Tên miền Tùy chỉnh)
+
+skinparam sequenceMessageAlign center
+skinparam backgroundColor #FEFEFE
+
+actor "Client\nKhách hàng" as Client
+participant "Nginx Ingress\nController" as Nginx
+participant "Tenant Mapper\nDịch vụ Ánh xạ" as Mapper
+database "Redis" as Redis
+participant "API Gateway" as Gateway
+participant "User Service\nDịch vụ Người dùng" as UserService
+database "MongoDB" as DB
+
+autonumber
+
+== Request Flow / Luồng Yêu cầu ==
+
+Client -> Nginx: **GET** https://customer.com/api/users/profile\nHost: customer.com
+note right of Nginx
+  **Nginx receives request**
+  **Nginx nhận yêu cầu**
+  
+  Custom domain detected
+  Phát hiện tên miền tùy chỉnh
+  
+  Must resolve tenant_id
+  Phải phân giải tenant_id
+end note
+
+== Auth-URL Subrequest / Yêu cầu con Auth-URL ==
+
+Nginx -> Mapper: **GET** /\nHeaders:\n• X-Original-Host: customer.com\n• X-Forwarded-Host: customer.com
+note right of Mapper
+  **Tenant Mapper receives:**
+  **Tenant Mapper nhận:**
+  
+  1. Extract domain from headers
+     Trích xuất tên miền từ headers
+  2. Query Redis
+     Truy vấn Redis
+  3. Return tenant_id
+     Trả về tenant_id
+end note
+
+Mapper -> Mapper: Read header:\nX-Original-Host = "customer.com"
+
+Mapper -> Redis: **GET** domain:customer.com
+note right of Redis
+  **Redis stores mappings:**
+  **Redis lưu trữ ánh xạ:**
+  
+  Key: domain:customer.com
+  Value: tenant-456
+end note
+
+Redis --> Mapper: "tenant-456"
+
+Mapper --> Nginx: **200 OK**\nHeaders:\n• X-Tenant-ID: tenant-456
+note left of Nginx
+  **Nginx processes auth response:**
+  **Nginx xử lý phản hồi auth:**
+  
+  • 200 OK = Allow request
+    200 OK = Cho phép yêu cầu
+  • Copy X-Tenant-ID header
+    Sao chép header X-Tenant-ID
+  • Forward to backend
+    Chuyển tiếp đến backend
+end note
+
+== Backend Request / Yêu cầu Backend ==
+
+Nginx -> Gateway: **GET** /api/users/profile\nHeaders:\n• X-Tenant-ID: tenant-456\n• Host: customer.com
+
+note over Gateway
+  **Gateway validates:**
+  **Gateway xác thực:**
+  • X-Tenant-ID present
+    X-Tenant-ID có mặt
+  • Route to service
+    Định tuyến đến service
+end note
+
+Gateway -> UserService: **GET** /users/profile\nHeaders:\n• X-Tenant-ID: tenant-456
+
+note over UserService
+  **Service processes:**
+  **Service xử lý:**
+  1. Read X-Tenant-ID
+     Đọc X-Tenant-ID
+  2. Query tenant data
+     Truy vấn dữ liệu tenant
+  3. Apply isolation
+     Áp dụng cách ly
+end note
+
+UserService -> DB: Query:\ndb.users.find({\n  tenant_id: "tenant-456",\n  user_id: "...",\n})
+
+DB --> UserService: User data for tenant-456\nDữ liệu người dùng của tenant-456
+
+UserService --> Gateway: **200 OK**\n{\n  "user": {...},\n  "tenant_id": "tenant-456"\n}
+
+Gateway --> Nginx: **200 OK**\nResponse body
+
+Nginx --> Client: **200 OK**\nUser profile data\nDữ liệu hồ sơ người dùng
+
+== Error Scenario / Kịch bản Lỗi ==
+
+note over Mapper
+  **If domain not found in Redis:**
+  **Nếu tên miền không tìm thấy trong Redis:**
+  
+  Tenant Mapper returns:
+  Tenant Mapper trả về:
+  • 401 Unauthorized
+  • No X-Tenant-ID header
+    Không có header X-Tenant-ID
+  
+  Nginx will block request
+  Nginx sẽ chặn yêu cầu
+end note
+
+== Annotations Configuration / Cấu hình Annotations ==
+
+note over Nginx
+  **Ingress Annotations:**
+  
+  ```yaml
+  annotations:
+    # Auth URL for tenant resolution
+    nginx.ingress.kubernetes.io/auth-url: 
+      "http://tenant-mapper.saas-framework.svc.cluster.local"
+    
+    # Copy response header
+    nginx.ingress.kubernetes.io/auth-response-headers: 
+      "X-Tenant-ID"
+    
+    # Pass original host to auth service
+    nginx.ingress.kubernetes.io/auth-snippet: |
+      proxy_set_header X-Original-Host $host;
+      proxy_set_header X-Forwarded-Host $host;
+    
+    # Session cookies with Path=/
+    nginx.ingress.kubernetes.io/session-cookie-path: "/"
+  ```
+end note
+
+@enduml

@@ -1,0 +1,97 @@
+@startuml traffic-flow-pattern-a
+!theme plain
+title Traffic Flow - Pattern A (Subfolder Routing)\nLuồng Lưu lượng - Mô hình A (Định tuyến Thư mục con)
+
+skinparam sequenceMessageAlign center
+skinparam backgroundColor #FEFEFE
+
+actor "Client\nKhách hàng" as Client
+participant "Nginx Ingress\nController" as Nginx
+participant "API Gateway" as Gateway
+participant "User Service\nDịch vụ Người dùng" as UserService
+database "MongoDB" as DB
+
+autonumber
+
+== Request Flow / Luồng Yêu cầu ==
+
+Client -> Nginx: **GET** https://saas.com/tenant-123/api/users/profile\nHost: saas.com
+note right of Nginx
+  **Nginx Processing:**
+  **Xử lý Nginx:**
+  
+  1. Receive request
+     Nhận yêu cầu
+  2. Match regex pattern
+     Khớp mẫu regex
+  3. Extract tenant_id
+     Trích xuất tenant_id
+end note
+
+Nginx -> Nginx: Extract from URI:\n/tenant-123/api/users/profile\n↓\ntenant_id = "tenant-123"
+
+Nginx -> Nginx: Add header:\nX-Tenant-ID: tenant-123
+
+Nginx -> Nginx: Rewrite URI:\n/tenant-123/api/users/profile\n↓\n/api/users/profile
+
+Nginx -> Gateway: **GET** /api/users/profile\nHeaders:\n• X-Tenant-ID: tenant-123\n• Host: saas.com
+
+note over Gateway
+  **Gateway validates:**
+  **Gateway xác thực:**
+  • Check X-Tenant-ID exists
+    Kiểm tra X-Tenant-ID tồn tại
+  • Route to appropriate service
+    Định tuyến đến service phù hợp
+end note
+
+Gateway -> UserService: **GET** /users/profile\nHeaders:\n• X-Tenant-ID: tenant-123
+
+note over UserService
+  **Service processes:**
+  **Service xử lý:**
+  1. Read X-Tenant-ID header
+     Đọc header X-Tenant-ID
+  2. Query tenant-specific data
+     Truy vấn dữ liệu của tenant
+  3. Apply tenant isolation
+     Áp dụng cách ly tenant
+end note
+
+UserService -> DB: Query:\ndb.users.find({\n  tenant_id: "tenant-123",\n  user_id: "...",\n})
+
+DB --> UserService: User data for tenant-123\nDữ liệu người dùng của tenant-123
+
+UserService --> Gateway: **200 OK**\n{\n  "user": {...},\n  "tenant_id": "tenant-123"\n}
+
+Gateway --> Nginx: **200 OK**\nResponse body
+
+Nginx --> Client: **200 OK**\nUser profile data\nDữ liệu hồ sơ người dùng
+
+== Annotations Configuration / Cấu hình Annotations ==
+
+note over Nginx
+  **Ingress Annotations:**
+  
+  ```yaml
+  annotations:
+    # Extract tenant_id with regex
+    nginx.ingress.kubernetes.io/server-snippet: |
+      set $tenant_id '';
+      if ($request_uri ~* "^/([^/]+)/api/(.*)$") {
+        set $tenant_id $1;
+      }
+    
+    # Inject header
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_set_header X-Tenant-ID $tenant_id;
+    
+    # Rewrite path
+    nginx.ingress.kubernetes.io/rewrite-target: /api/$2
+    
+    # Use regex matching
+    nginx.ingress.kubernetes.io/use-regex: "true"
+  ```
+end note
+
+@enduml

@@ -1,0 +1,98 @@
+@startuml deployment-flow
+!theme plain
+title Deployment Flow - Dev to Production\nLuồng Triển khai - Dev đến Production
+
+skinparam backgroundColor #FEFEFE
+
+participant "Developer\nNhà phát triển" as Dev
+participant "Git Repository" as Git
+participant "CI/CD Pipeline\n(GitHub Actions)" as CI
+participant "Container Registry\n(GCR)" as Registry
+participant "Dev Cluster\nK8s Dev" as DevK8s
+participant "Staging Cluster\nK8s Staging" as StagingK8s
+participant "Production Cluster\nK8s Production" as ProdK8s
+database "Monitoring\nGiám sát" as Monitor
+
+== Development Phase / Giai đoạn Development ==
+
+Dev -> Dev: 1. Make code changes\nThực hiện thay đổi code
+Dev -> Dev: 2. Test locally\nTest local
+
+Dev -> Git: 3. git commit & push\nto feature branch
+
+Git -> CI: 4. Trigger CI/CD\nKích hoạt CI/CD
+
+CI -> CI: 5. Run tests\nChạy tests
+CI -> CI: 6. Run linters\nChạy linters
+CI -> CI: 7. Build Docker images\nBuild Docker images
+
+CI -> Registry: 8. Push images\nwith dev tag\nPush images với tag dev
+
+CI -> DevK8s: 9. Deploy to Dev\nusing Kustomize/Helm\nTriển khai lên Dev
+
+DevK8s -> DevK8s: 10. Rolling update\nCập nhật rolling
+DevK8s -> Monitor: 11. Send metrics\nGửi metrics
+
+Dev -> DevK8s: 12. Verify deployment\nXác minh triển khai
+Dev -> DevK8s: 13. Test features\nTest tính năng
+
+== Staging Phase / Giai đoạn Staging ==
+
+Dev -> Git: 14. Create PR to main\nTạo PR đến main
+
+Git -> CI: 15. PR validation\nXác thực PR
+
+CI -> CI: 16. Run full test suite\nChạy full test suite
+CI -> CI: 17. Security scan\nQuét bảo mật
+
+Dev -> Git: 18. Merge PR\nMerge PR
+
+Git -> CI: 19. Trigger staging deploy\nKích hoạt deploy staging
+
+CI -> Registry: 20. Tag images\nwith staging tag\nTag images với staging tag
+
+CI -> StagingK8s: 21. Deploy to Staging\nTriển khai lên Staging
+
+StagingK8s -> StagingK8s: 22. Rolling update\nCập nhật rolling
+StagingK8s -> Monitor: 23. Send metrics\nGửi metrics
+
+Dev -> StagingK8s: 24. Run integration tests\nChạy integration tests
+Dev -> StagingK8s: 25. QA validation\nXác thực QA
+
+== Production Phase / Giai đoạn Production ==
+
+Dev -> Git: 26. Create release tag\nTạo release tag
+
+Git -> CI: 27. Trigger production build\nKích hoạt build production
+
+CI -> CI: 28. Run security checks\nChạy kiểm tra bảo mật
+CI -> CI: 29. Build production images\nBuild production images
+
+CI -> Registry: 30. Push production images\nwith version tag (v1.2.3)\nPush với tag version
+
+note over Dev, ProdK8s
+  **Manual approval required**
+  **Yêu cầu phê duyệt thủ công**
+end note
+
+Dev -> CI: 31. Approve production deploy\nPhê duyệt deploy production
+
+CI -> ProdK8s: 32. Deploy to Production\nusing Helm\nTriển khai lên Production
+
+ProdK8s -> ProdK8s: 33. Blue-Green deployment\nTriển khai Blue-Green
+ProdK8s -> Monitor: 34. Send metrics\nGửi metrics
+
+Monitor -> Monitor: 35. Check health metrics\nKiểm tra health metrics
+
+alt Deployment Success / Triển khai Thành công
+    Monitor --> Dev: 36a. ✅ Deployment healthy\nTriển khai khỏe mạnh
+    ProdK8s -> ProdK8s: 37a. Complete rollout\nHoàn thành rollout
+else Deployment Failed / Triển khai Thất bại
+    Monitor --> Dev: 36b. ❌ Issues detected\nPhát hiện vấn đề
+    Dev -> ProdK8s: 37b. Rollback\nQuay lại phiên bản trước
+    ProdK8s -> ProdK8s: 38b. Restore previous version\nKhôi phục phiên bản trước
+end
+
+Dev -> Monitor: 39. Monitor production\nGiám sát production
+
+@enduml

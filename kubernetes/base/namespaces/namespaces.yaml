@@ -1,0 +1,140 @@
+# Kubernetes Namespace Strategy for Scalable Multi-tenant SaaS
+# Cell-based architecture supporting millions of tenants
+
+---
+# Core System Namespace
+# Purpose: Infrastructure components (Ingress, Cert-manager, Monitoring)
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: core-system
+  labels:
+    name: core-system
+    tier: infrastructure
+    managed-by: platform-team
+  annotations:
+    description: "Core infrastructure services including Ingress controllers, certificate management, and monitoring stack"
+
+---
+# Shared Services Namespace
+# Purpose: Common services used across tenants (Auth, Media, Notifications)
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: shared-services
+  labels:
+    name: shared-services
+    tier: platform
+    managed-by: platform-team
+  annotations:
+    description: "Shared platform services including authentication (Keycloak), media processing, and notification delivery"
+
+---
+# Tenant Workloads Namespace
+# Purpose: Business microservices and tenant-specific workloads
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tenant-workloads
+  labels:
+    name: tenant-workloads
+    tier: application
+    managed-by: platform-team
+  annotations:
+    description: "Tenant business logic microservices with multi-tenancy isolation"
+    network-policy: "enabled"
+
+---
+# 3rd Party Sandbox Namespace
+# Purpose: Isolated environment for 3rd party integrations with strict security
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: 3rd-party-sandbox
+  labels:
+    name: 3rd-party-sandbox
+    tier: sandbox
+    security: strict
+    managed-by: platform-team
+  annotations:
+    description: "Isolated sandbox for 3rd party plugins and integrations with restricted network access"
+    network-policy: "strict"
+    pod-security: "restricted"
+
+---
+# Resource Quotas for Tenant Workloads
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: tenant-workloads-quota
+  namespace: tenant-workloads
+spec:
+  hard:
+    requests.cpu: "100"
+    requests.memory: 200Gi
+    limits.cpu: "200"
+    limits.memory: 400Gi
+    persistentvolumeclaims: "50"
+    pods: "500"
+
+---
+# Resource Quotas for 3rd Party Sandbox
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: sandbox-quota
+  namespace: 3rd-party-sandbox
+spec:
+  hard:
+    requests.cpu: "20"
+    requests.memory: 40Gi
+    limits.cpu: "40"
+    limits.memory: 80Gi
+    persistentvolumeclaims: "10"
+    pods: "100"
+
+---
+# Limit Ranges for Tenant Workloads
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: tenant-workloads-limits
+  namespace: tenant-workloads
+spec:
+  limits:
+  - max:
+      cpu: "4"
+      memory: "8Gi"
+    min:
+      cpu: "10m"
+      memory: "32Mi"
+    default:
+      cpu: "500m"
+      memory: "512Mi"
+    defaultRequest:
+      cpu: "100m"
+      memory: "128Mi"
+    type: Container
+
+---
+# Limit Ranges for 3rd Party Sandbox
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: sandbox-limits
+  namespace: 3rd-party-sandbox
+spec:
+  limits:
+  - max:
+      cpu: "2"
+      memory: "4Gi"
+    min:
+      cpu: "10m"
+      memory: "32Mi"
+    default:
+      cpu: "250m"
+      memory: "256Mi"
+    defaultRequest:
+      cpu: "50m"
+      memory: "64Mi"
+    type: Container
