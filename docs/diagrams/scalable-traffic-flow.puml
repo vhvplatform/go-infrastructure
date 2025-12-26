@@ -1,0 +1,138 @@
+@startuml scalable-traffic-flow
+!theme plain
+title Scalable SaaS Traffic Flow: Cloud LB → Nginx → Service Mesh → Services
+
+skinparam sequenceMessageAlign center
+skinparam backgroundColor #FEFEFE
+
+actor "Client\nKhách hàng" as Client
+participant "Cloud Load Balancer\n(AWS ALB/GCP LB)" as CloudLB
+participant "Nginx Ingress\n(core-system)" as Nginx
+participant "Tenant Mapper\n(shared-services)" as TenantMapper
+database "Redis\n(Domain Mappings)" as Redis
+participant "Service Mesh\n(Linkerd/Istio)" as Mesh
+participant "API Gateway\n(shared-services)" as APIGateway
+participant "User Service\n(tenant-workloads)" as UserService
+database "MongoDB\n(Tenant Data)" as MongoDB
+
+autonumber
+
+== Request Flow: Custom Domain Pattern ==
+
+Client -> CloudLB: **HTTPS** GET /api/users/profile\nHost: acmecorp.com\nAuthorization: Bearer token
+
+note right of CloudLB
+  **Cloud LB Responsibilities:**
+  • SSL/TLS termination
+  • DDoS protection
+  • Geographic routing
+  • Health checks
+end note
+
+CloudLB -> Nginx: Forward request\nHost: acmecorp.com
+
+note right of Nginx
+  **Nginx Ingress:**
+  • Match custom domain pattern
+  • Trigger auth-url subrequest
+  • Tenant resolution
+end note
+
+== Tenant Resolution Subrequest ==
+
+Nginx -> TenantMapper: **Auth Subrequest**\nGET /\nX-Original-Host: acmecorp.com
+
+TenantMapper -> TenantMapper: Read X-Original-Host header
+
+TenantMapper -> Redis: **GET** domain:acmecorp.com
+
+Redis --> TenantMapper: "tenant-abc123"
+
+TenantMapper --> Nginx: **200 OK**\nX-Tenant-ID: tenant-abc123
+
+note left of Nginx
+  **Nginx copies auth header:**
+  X-Tenant-ID: tenant-abc123
+  to proxied request
+end note
+
+== Service Mesh & Application Layer ==
+
+Nginx -> Mesh: Forward to API Gateway\nX-Tenant-ID: tenant-abc123\n/api/users/profile
+
+note right of Mesh
+  **Service Mesh (Linkerd/Istio):**
+  • mTLS encryption
+  • Distributed tracing
+  • Circuit breaking
+  • Retry policies
+  • Metrics collection
+end note
+
+Mesh -> APIGateway: mTLS connection\nX-Tenant-ID: tenant-abc123
+
+APIGateway -> APIGateway: Validate JWT token\nCheck permissions
+
+APIGateway -> Mesh: Route to User Service\nX-Tenant-ID: tenant-abc123
+
+Mesh -> UserService: mTLS connection\nX-Tenant-ID: tenant-abc123\nGET /api/users/profile
+
+note right of UserService
+  **Tenancy Middleware:**
+  1. Extract X-Tenant-ID header
+  2. Validate format
+  3. Store in context
+  4. Enforce tenant isolation
+end note
+
+UserService -> UserService: Extract tenant ID\ntenantID := middleware.MustGetTenantID(c)
+
+UserService -> MongoDB: **Query with tenant isolation**\ndb.users.findOne({\n  tenant_id: "tenant-abc123",\n  _id: userID\n})
+
+MongoDB --> UserService: User data
+
+== Response Flow ==
+
+UserService --> Mesh: **200 OK**\n{ user: {...} }
+
+note left of Mesh
+  **Observability:**
+  • Trace spans collected
+  • Metrics recorded
+  • Logs with tenant_id
+end note
+
+Mesh --> APIGateway: Response
+
+APIGateway --> Mesh: Response
+
+Mesh --> Nginx: Response
+
+Nginx --> CloudLB: Response
+
+CloudLB --> Client: **HTTPS 200 OK**\n{ user: {...} }
+
+== Network Policy Enforcement ==
+
+note over UserService, MongoDB
+  **Network Policies:**
+  • 3rd-party-sandbox: DENY ALL by default
+  • Only allow to public API gateway
+  • Block internal DB access
+  • Enforce namespace isolation
+end note
+
+== Subfolder Pattern (Alternative) ==
+
+note over Client, Nginx
+  **Pattern A: Subfolder Routing**
+  
+  Request: GET /tenant-123/api/users/profile
+  
+  1. Nginx extracts tenant_id from URI
+  2. Sets X-Tenant-ID: tenant-123
+  3. Rewrites URI to /api/users/profile
+  4. Same flow from step 7 onwards
+end note
+
+@enduml
