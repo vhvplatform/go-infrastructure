@@ -162,7 +162,7 @@ install_go() {
     fi
     
     log_info "Installing Go..."
-    GO_VERSION="1.22.0"  # Update to latest stable version
+    GO_VERSION="1.21.5"  # Match version with Dockerfiles and go.mod
     if [[ "$OS" == "linux" ]]; then
         wget "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz"
         sudo rm -rf /usr/local/go
@@ -172,7 +172,7 @@ install_go() {
         export PATH=$PATH:/usr/local/go/bin
     elif [[ "$OS" == "macos" ]]; then
         if command_exists brew; then
-            brew install go@1.21
+            brew install go
         else
             wget "https://go.dev/dl/go${GO_VERSION}.darwin-amd64.tar.gz"
             sudo rm -rf /usr/local/go
