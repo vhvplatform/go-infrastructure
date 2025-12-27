@@ -105,6 +105,8 @@ infrastructure/
 
 ## 🚀 Quick Start
 
+**New to this repository?** Check out our [**Quick Start Guide**](docs/QUICK_START.md) for step-by-step instructions to get up and running in under 30 minutes!
+
 ### Multi-tenant Deployment
 
 ```bash

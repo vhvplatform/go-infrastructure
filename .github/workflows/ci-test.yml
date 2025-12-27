@@ -198,16 +198,16 @@ jobs:
           # Test 1: Health checks
           echo "Testing health endpoints..."
           curl -f http://localhost:8080/health
-          
+
           # Test 2: Redis storage and retrieval
           echo "Testing Redis connectivity..."
           docker-compose exec -T redis redis-cli SET test:key "test-value"
           docker-compose exec -T redis redis-cli GET test:key | grep -q "test-value"
-          
+
           # Test 3: Prometheus metrics
           echo "Testing Prometheus..."
           curl -f http://localhost:9090/-/healthy
-          
+
           echo "All E2E tests passed!"
 
       - name: Show logs on failure
