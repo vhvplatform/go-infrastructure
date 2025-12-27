@@ -36,7 +36,6 @@ resource "aws_eks_cluster" "main" {
 
   depends_on = [
     aws_iam_role_policy_attachment.cluster_policy,
-    aws_iam_role_policy_attachment.service_policy,
   ]
 
   tags = merge(
@@ -67,11 +66,6 @@ resource "aws_iam_role" "cluster" {
 
 resource "aws_iam_role_policy_attachment" "cluster_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
-  role       = aws_iam_role.cluster.name
-}
-
-resource "aws_iam_role_policy_attachment" "service_policy" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSServicePolicy"
   role       = aws_iam_role.cluster.name
 }
 

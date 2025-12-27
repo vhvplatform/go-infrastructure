@@ -162,7 +162,7 @@ install_go() {
     fi
     
     log_info "Installing Go..."
-    GO_VERSION="1.21.5"
+    GO_VERSION="1.22.0"  # Update to latest stable version
     if [[ "$OS" == "linux" ]]; then
         wget "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz"
         sudo rm -rf /usr/local/go

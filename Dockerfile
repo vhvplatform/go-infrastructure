@@ -45,9 +45,5 @@ USER nonroot:nonroot
 # Expose port
 EXPOSE 80
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD ["/tenant-mapper", "health"]
-
 # Run the application
 ENTRYPOINT ["/tenant-mapper"]
