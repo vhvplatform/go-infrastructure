@@ -105,7 +105,9 @@ infrastructure/
 
 ## 🚀 Quick Start
 
-**New to this repository?** Check out our [**Quick Start Guide**](docs/QUICK_START.md) for step-by-step instructions to get up and running in under 30 minutes!
+**New to this repository?** Check out our guides for step-by-step instructions:
+- [**Quick Start Guide**](docs/QUICK_START.md) - Linux/macOS setup (under 30 minutes)
+- [**Windows Setup Guide**](docs/windows-setup.md) - Complete Windows developer guide
 
 ### Multi-tenant Deployment
 
@@ -146,6 +148,7 @@ Ensure you have the following tools installed:
 
 For a quick and automated installation of all prerequisites, use our setup script:
 
+**Linux/macOS:**
 ```bash
 # Clone the repository
 git clone https://github.com/vhvplatform/go-infrastructure.git
@@ -155,8 +158,18 @@ cd go-infrastructure
 ./setup.sh
 ```
 
+**Windows:**
+```powershell
+# Clone the repository
+git clone https://github.com/vhvplatform/go-infrastructure.git
+cd go-infrastructure
+
+# Run the automated setup script (as Administrator)
+.\scripts\setup-windows.ps1
+```
+
 The setup script will:
-- ✅ Detect your operating system (Linux or macOS)
+- ✅ Detect your operating system (Linux, macOS, or Windows)
 - ✅ Install missing dependencies (kubectl, helm, terraform, etc.)
 - ✅ Configure environment variables
 - ✅ Build the tenant-mapper service
@@ -165,6 +178,7 @@ The setup script will:
 **Supported Operating Systems:**
 - Ubuntu/Debian Linux
 - macOS (with Homebrew recommended)
+- Windows 10/11 (with PowerShell 5.1+)
 
 ### Infrastructure Components
 
@@ -695,6 +709,7 @@ If you encounter issues not covered here:
 - [Architecture](docs/ARCHITECTURE.md) - Infrastructure architecture
 - [GitOps Workflow](docs/GITOPS.md) - GitOps best practices
 - [Troubleshooting](docs/TROUBLESHOOTING.md) - Common issues and solutions
+- **[Windows Setup Guide](docs/windows-setup.md)** - Complete guide for Windows developers
 - [Extraction Guide](EXTRACTION_GUIDE.md) - How to extract to separate repo
 - **[Traffic Flow Architecture](docs/TRAFFIC_FLOW_ARCHITECTURE.md)** - Complete scalable architecture guide
 
