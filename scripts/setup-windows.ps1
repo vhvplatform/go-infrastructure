@@ -333,9 +333,8 @@ IMAGE_TAG=latest
 "@
     
     try {
-        # Add a trailing newline for Unix compatibility
-        $envContent = $envContent + "`n"
-        $envContent | Out-File -FilePath $envFile -Encoding utf8 -NoNewline
+        # Write with default line ending (adds newline at end)
+        $envContent | Out-File -FilePath $envFile -Encoding utf8
         Write-Success ".env file created. Please configure it with your values."
     }
     catch {
