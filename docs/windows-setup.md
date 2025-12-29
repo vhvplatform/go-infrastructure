@@ -39,6 +39,11 @@ The following tools are required for development:
 | **Go** | 1.21+ | Build tenant-mapper service |
 | **gcloud CLI** | Latest | Google Cloud management (optional) |
 
+> **Note**: This repository includes bash scripts for deployment and testing. On Windows, you can run these scripts using:
+> - **Git Bash** (included with Git for Windows) - Recommended for most users
+> - **WSL 2** (Windows Subsystem for Linux) - For advanced users
+> - Alternatively, use native Windows commands (PowerShell/kubectl) where provided
+
 ## System Requirements
 
 ### Minimum Requirements
@@ -590,14 +595,18 @@ For cloud deployments, see:
 ### 4. Deploy Applications
 
 ```powershell
-# Deploy to development environment
-.\scripts\deploy.sh dev
-
-# Or using kubectl and kustomize
+# Using kubectl and kustomize (native Windows)
 kubectl apply -k kubernetes/overlays/dev
 
 # Check deployment status
 kubectl get all -n saas-framework-dev
+```
+
+Or use the bash deployment scripts via Git Bash or WSL:
+
+```bash
+# In Git Bash or WSL
+./scripts/deploy.sh dev
 ```
 
 ### 5. Set Up Monitoring
