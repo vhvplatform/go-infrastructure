@@ -140,8 +140,16 @@ function Test-Docker {
 # Install kubectl
 function Install-Kubectl {
     if (Test-Command "kubectl") {
-        $kubectlVersion = (kubectl version --client --short 2>$null) -replace '[^0-9.]', ''
-        Write-Success "kubectl is already installed (version: $kubectlVersion)"
+        try {
+            $kubectlVersion = (kubectl version --client 2>&1 | Select-String -Pattern "Client Version.*v([0-9]+\.[0-9]+\.[0-9]+)").Matches.Groups[1].Value
+            if (-not $kubectlVersion) {
+                $kubectlVersion = "installed"
+            }
+            Write-Success "kubectl is already installed (version: $kubectlVersion)"
+        }
+        catch {
+            Write-Success "kubectl is already installed"
+        }
         return
     }
     
@@ -161,8 +169,16 @@ function Install-Kubectl {
 # Install Helm
 function Install-Helm {
     if (Test-Command "helm") {
-        $helmVersion = (helm version --short 2>$null) -replace '[^0-9.]', ''
-        Write-Success "Helm is already installed (version: $helmVersion)"
+        try {
+            $helmVersion = (helm version 2>&1 | Select-String -Pattern "v([0-9]+\.[0-9]+\.[0-9]+)").Matches.Groups[1].Value
+            if (-not $helmVersion) {
+                $helmVersion = "installed"
+            }
+            Write-Success "Helm is already installed (version: $helmVersion)"
+        }
+        catch {
+            Write-Success "Helm is already installed"
+        }
         return
     }
     
@@ -233,12 +249,11 @@ function Install-Go {
     }
     
     # Match version with go.mod requirement (1.21)
-    $goVersion = "1.21"
-    Write-Info "Installing Go $goVersion..."
+    Write-Info "Installing Go 1.21.x..."
     
     try {
-        # Install latest 1.21.x version
-        choco install golang --version=$goVersion -y
+        # Install Go - let Chocolatey pick the latest 1.21.x version
+        choco install golang -y
         
         # Set up Go environment variables
         $goPath = "$env:USERPROFILE\go"
@@ -251,14 +266,24 @@ function Install-Go {
         
         # Update PATH if needed (check both directories before updating)
         $pathUpdated = $false
-        $newPath = $currentPath
+        $newPath = if ($currentPath) { $currentPath } else { "" }
+        
+        if ($newPath -and -not $newPath.EndsWith(';')) {
+            $newPath += ';'
+        }
         
         if ($currentPath -notlike "*$goBin*") {
-            $newPath = "$newPath;$goBin"
+            if ($newPath -and $newPath -ne "" -and -not $newPath.EndsWith(';')) {
+                $newPath += ";"
+            }
+            $newPath += $goBin
             $pathUpdated = $true
         }
         if ($currentPath -notlike "*$goUserBin*") {
-            $newPath = "$newPath;$goUserBin"
+            if ($newPath -and $newPath -ne "" -and -not $newPath.EndsWith(';')) {
+                $newPath += ";"
+            }
+            $newPath += $goUserBin
             $pathUpdated = $true
         }
         
@@ -333,7 +358,7 @@ IMAGE_TAG=latest
 "@
     
     try {
-        # Write with default line ending (adds newline at end)
+        # Write file with UTF-8 encoding
         $envContent | Out-File -FilePath $envFile -Encoding utf8
         Write-Success ".env file created. Please configure it with your values."
     }

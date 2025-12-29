@@ -176,11 +176,11 @@ Or download from: https://www.terraform.io/downloads
 ### Step 6: Install Go
 
 ```powershell
-# Install Go 1.21 (matches project requirement)
-choco install golang --version=1.21 -y
+# Install latest Go version (compatible with 1.21 requirement)
+choco install golang -y
 ```
 
-Or download from: https://go.dev/dl/ (download Go 1.21.x)
+Or download manually from: https://go.dev/dl/ (download Go 1.21.x or later)
 
 ### Step 7: Install Google Cloud SDK (Optional)
 
