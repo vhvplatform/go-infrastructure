@@ -232,10 +232,13 @@ function Install-Go {
         return
     }
     
-    Write-Info "Installing Go 1.21.5..."
+    # Match version with go.mod requirement (1.21)
+    $goVersion = "1.21"
+    Write-Info "Installing Go $goVersion..."
     
     try {
-        choco install golang --version=1.21.5 -y
+        # Install latest 1.21.x version
+        choco install golang --version=$goVersion -y
         
         # Set up Go environment variables
         $goPath = "$env:USERPROFILE\go"
@@ -246,11 +249,21 @@ function Install-Go {
         $goUserBin = "$goPath\bin"
         $currentPath = [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::User)
         
+        # Update PATH if needed (check both directories before updating)
+        $pathUpdated = $false
+        $newPath = $currentPath
+        
         if ($currentPath -notlike "*$goBin*") {
-            [Environment]::SetEnvironmentVariable("Path", "$currentPath;$goBin", [EnvironmentVariableTarget]::User)
+            $newPath = "$newPath;$goBin"
+            $pathUpdated = $true
         }
         if ($currentPath -notlike "*$goUserBin*") {
-            [Environment]::SetEnvironmentVariable("Path", "$currentPath;$goUserBin", [EnvironmentVariableTarget]::User)
+            $newPath = "$newPath;$goUserBin"
+            $pathUpdated = $true
+        }
+        
+        if ($pathUpdated) {
+            [Environment]::SetEnvironmentVariable("Path", $newPath, [EnvironmentVariableTarget]::User)
         }
         
         # Refresh environment
@@ -320,6 +333,8 @@ IMAGE_TAG=latest
 "@
     
     try {
+        # Add a trailing newline for Unix compatibility
+        $envContent = $envContent + "`n"
         $envContent | Out-File -FilePath $envFile -Encoding utf8 -NoNewline
         Write-Success ".env file created. Please configure it with your values."
     }
