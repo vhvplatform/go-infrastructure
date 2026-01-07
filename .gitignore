@@ -79,8 +79,9 @@ kubeconfig
 *.kubeconfig
 
 # Go build artifacts
-services/*/go.sum
-services/*/*.exe
-services/*/tenant-mapper
-services/*/debug
+server/*/go.sum
+server/*/*.exe
+server/*/tenant-mapper
+server/*/middleware
+server/*/debug
 vendor/
