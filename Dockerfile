@@ -16,11 +16,11 @@ RUN apk add --no-cache git ca-certificates tzdata
 WORKDIR /app
 
 # Copy and download dependencies (cached layer)
-COPY services/tenant-mapper/go.mod services/tenant-mapper/go.sum ./
+COPY server/tenant-mapper/go.mod server/tenant-mapper/go.sum ./
 RUN go mod download && go mod verify
 
 # Copy source code
-COPY services/tenant-mapper/ ./
+COPY server/tenant-mapper/ ./
 
 # Build with optimizations
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \

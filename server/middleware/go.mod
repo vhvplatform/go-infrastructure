@@ -1,4 +1,4 @@
-module github.com/vhvplatform/go-infrastructure/services/middleware
+module github.com/vhvplatform/go-infrastructure/server/middleware
 
 go 1.21
 

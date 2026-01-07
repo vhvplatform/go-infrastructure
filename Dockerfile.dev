@@ -20,14 +20,14 @@ RUN apk add --no-cache \
 WORKDIR /app
 
 # Copy go mod files for dependency caching
-COPY services/tenant-mapper/go.mod services/tenant-mapper/go.sum ./
+COPY server/tenant-mapper/go.mod server/tenant-mapper/go.sum ./
 RUN go mod download
 
 # Install air for hot-reload (optional development tool)
 RUN go install github.com/cosmtrek/air@latest
 
 # Copy source code
-COPY services/tenant-mapper/ ./
+COPY server/tenant-mapper/ ./
 
 # Build the application with debug symbols
 RUN CGO_ENABLED=0 GOOS=linux go build -gcflags="all=-N -l" -o tenant-mapper main.go

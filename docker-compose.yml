@@ -31,7 +31,7 @@ services:
   # Tenant Mapper Service - Domain to tenant ID resolution
   tenant-mapper:
     build:
-      context: ./services/tenant-mapper
+      context: ./server/tenant-mapper
       dockerfile: Dockerfile
     container_name: saas-tenant-mapper
     ports:

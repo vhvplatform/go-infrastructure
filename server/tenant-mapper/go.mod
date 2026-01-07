@@ -1,4 +1,4 @@
-module github.com/vhvplatform/go-infrastructure/services/tenant-mapper
+module github.com/vhvplatform/go-infrastructure/server/tenant-mapper
 
 go 1.21
 

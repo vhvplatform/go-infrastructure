@@ -64,9 +64,13 @@ See [detailed deployment guide](docs/HYBRID_MULTITENANT_DEPLOYMENT.md) for more 
 
 ```
 infrastructure/
-├── services/            # Go microservices
+├── client/              # ReactJS frontend microservices
+│   └── README.md        # Frontend development guide
+├── server/              # Go backend microservices
 │   ├── tenant-mapper/   # Domain to tenant ID resolution service
 │   └── middleware/      # Go tenancy middleware (Gin/Echo)
+├── flutter/             # Flutter mobile applications
+│   └── README.md        # Mobile app development guide
 ├── kubernetes/          # Kubernetes manifests with Kustomize
 │   ├── base/           # Base manifests
 │   │   ├── namespaces/      # Namespace strategy (core, shared, workloads, sandbox)

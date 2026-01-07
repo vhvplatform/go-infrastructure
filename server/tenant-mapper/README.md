@@ -106,4 +106,4 @@ curl -H "X-Original-Host: customer.com" http://localhost:80
 
 The service is deployed as part of the infrastructure and is used by Nginx Ingress for Pattern B routing (custom domains).
 
-See `kubernetes/base/services/tenant-mapper/` for deployment manifests.
+See `kubernetes/base/infrastructure/tenant-mapper/` for deployment manifests.

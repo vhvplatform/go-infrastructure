@@ -335,7 +335,7 @@ package main
 
 import (
     "github.com/gin-gonic/gin"
-    "github.com/vhvplatform/go-infrastructure/services/middleware"
+    "github.com/vhvplatform/go-infrastructure/server/middleware"
 )
 
 func main() {

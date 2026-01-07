@@ -19,7 +19,7 @@ This package provides tenant context management middleware for both **Gin** and 
 ## Installation
 
 ```bash
-go get github.com/vhvplatform/go-infrastructure/services/middleware
+go get github.com/vhvplatform/go-infrastructure/server/middleware
 ```
 
 ## Usage
@@ -31,7 +31,7 @@ package main
 
 import (
     "github.com/gin-gonic/gin"
-    "github.com/vhvplatform/go-infrastructure/services/middleware"
+    "github.com/vhvplatform/go-infrastructure/server/middleware"
 )
 
 func main() {
@@ -75,7 +75,7 @@ package main
 
 import (
     "github.com/labstack/echo/v4"
-    "github.com/vhvplatform/go-infrastructure/services/middleware"
+    "github.com/vhvplatform/go-infrastructure/server/middleware"
 )
 
 func main() {

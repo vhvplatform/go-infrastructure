@@ -274,8 +274,8 @@ EOF
 build_tenant_mapper() {
     log_info "Building tenant-mapper service..."
     
-    if [ -d "services/tenant-mapper" ]; then
-        cd services/tenant-mapper
+    if [ -d "server/tenant-mapper" ]; then
+        cd server/tenant-mapper
         if [ -f "go.mod" ]; then
             go mod download
             go build -o tenant-mapper main.go

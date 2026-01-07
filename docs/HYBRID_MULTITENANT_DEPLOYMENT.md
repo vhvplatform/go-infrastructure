@@ -186,7 +186,7 @@ kubectl create secret generic saas-secrets \
 
 ```bash
 # Navigate to tenant-mapper directory
-cd services/tenant-mapper
+cd server/tenant-mapper
 
 # Build Docker image
 docker build -t tenant-mapper:dev .
@@ -404,7 +404,7 @@ echo "RABBITMQ_PASSWORD=$RABBITMQ_PASSWORD" >> .env.prod.backup
 
 ```bash
 # Build tenant-mapper
-cd services/tenant-mapper
+cd server/tenant-mapper
 docker build -t gcr.io/$PROJECT_ID/tenant-mapper:1.0.0 .
 docker push gcr.io/$PROJECT_ID/tenant-mapper:1.0.0
 
@@ -578,7 +578,7 @@ spec:
 
 ```bash
 # Test tenant-mapper locally
-cd services/tenant-mapper
+cd server/tenant-mapper
 go test -v ./...
 ```
 
