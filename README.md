@@ -496,7 +496,7 @@ The repository includes comprehensive CI/CD pipelines:
 
 ```bash
 # Run Go unit tests
-cd services/tenant-mapper
+cd server/tenant-mapper
 go test -v -race ./...
 
 # Run integration tests with Docker Compose
@@ -698,7 +698,7 @@ If you encounter issues not covered here:
 
 - **[Hybrid Multi-tenant Deployment Guide (English)](docs/HYBRID_MULTITENANT_DEPLOYMENT.md)** - Complete guide for deploying hybrid multi-tenant infrastructure
 - **[Hướng dẫn Triển khai Đa-thuê bao Lai (Tiếng Việt)](docs/HYBRID_MULTITENANT_DEPLOYMENT_VI.md)** - Hướng dẫn đầy đủ bằng tiếng Việt
-- [Tenant Mapper Service](services/tenant-mapper/README.md) - Domain resolution service documentation
+- [Tenant Mapper Service](server/tenant-mapper/README.md) - Domain resolution service documentation
 
 ### Architecture Diagrams
 
@@ -721,7 +721,7 @@ If you encounter issues not covered here:
 
 - [Namespace Strategy](kubernetes/base/namespaces/namespaces.yaml) - 4-tier namespace architecture
 - [Network Policies](kubernetes/base/network-policies/network-policy-sandbox.yaml) - Zero-trust security
-- [Go Middleware](services/middleware/README.md) - Tenancy middleware for Gin/Echo
+- [Go Middleware](server/middleware/README.md) - Tenancy middleware for Gin/Echo
 
 ### Environment-specific Docs
 
